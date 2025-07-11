@@ -66,7 +66,7 @@ export default function Home() {
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">Simple steps to meaningful connections</p>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3 md:gap-8">
             <Card className="bg-card text-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 hover:border-primary/50 cursor-pointer group">
               <CardContent className="p-8">
                 <div className="bg-primary/20 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6 group-hover:bg-primary/30 transition-all duration-300">
@@ -180,7 +180,7 @@ export default function Home() {
             <p className="text-xl text-muted-foreground">Browse attendees and find conversation starters</p>
           </div>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
             {[
               {
                 name: "Sarah Johnson",

@@ -82,7 +82,7 @@ export default function Home() {
                       <div className="bg-secondary/20 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6 group-hover:bg-secondary/30 transition-all duration-300">
                         <UserCheck className="h-8 w-8 text-secondary group-hover:scale-110 transition-all duration-300" />
                       </div>
-                      <h3 className="text-xl font-semibold text-foreground mb-4 group-hover:text-secondary transition-colors duration-300">Share Your Story</h3>
+                      <h3 className="font-semibold text-foreground mb-4 group-hover:text-secondary transition-colors duration-300 text-[22px]">Share Your Story</h3>
                       <p className="text-muted-foreground">Create a profile with your interests, aspirations, and conversation starters</p>
                     </CardContent>
                   </Card>

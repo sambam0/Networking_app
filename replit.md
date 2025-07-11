@@ -29,9 +29,9 @@ The application follows a monorepo structure with clear separation between clien
 
 ### Database Strategy
 - **ORM**: Drizzle ORM for type-safe database operations
-- **Database**: PostgreSQL (configured via DATABASE_URL)
-- **Schema**: Shared schema definitions between client and server
-- **Development**: In-memory storage implementation for development/testing
+- **Database**: PostgreSQL with Neon (configured via DATABASE_URL)
+- **Schema**: Shared schema definitions between client and server with relations
+- **Storage**: DatabaseStorage implementation using PostgreSQL instead of in-memory storage
 
 ## Key Components
 
@@ -114,5 +114,14 @@ The application follows a monorepo structure with clear separation between clien
 - SESSION_SECRET for session encryption
 - NODE_ENV for environment-specific behavior
 - File upload configuration with size limits
+
+## Recent Changes
+
+### Database Migration (January 2025)
+- Migrated from in-memory storage to PostgreSQL database using Neon
+- Added database relations between users, events, attendees, and connections
+- Implemented DatabaseStorage class replacing MemStorage
+- Successfully pushed schema to production database
+- Updated all CRUD operations to use database instead of in-memory maps
 
 The application is designed to be scalable and maintainable, with clear separation of concerns and modern development practices throughout the stack.

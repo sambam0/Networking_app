@@ -1,5 +1,7 @@
 import { users, events, eventAttendees, connections, type User, type InsertUser, type Event, type InsertEvent, type EventAttendee, type InsertEventAttendee, type Connection, type InsertConnection, type EventWithHost, type EventWithAttendees, type UserProfile } from "@shared/schema";
 import { nanoid } from "nanoid";
+import { db } from "./db";
+import { eq, and, sql } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
@@ -31,267 +33,284 @@ export interface IStorage {
   getEventConnections(eventId: number, userId: number): Promise<UserProfile[]>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User> = new Map();
-  private events: Map<number, Event> = new Map();
-  private eventAttendees: Map<number, EventAttendee> = new Map();
-  private connections: Map<number, Connection> = new Map();
-  private currentUserId = 1;
-  private currentEventId = 1;
-  private currentEventAttendeeId = 1;
-  private currentConnectionId = 1;
 
-  constructor() {
-    this.seedData();
-  }
 
-  private seedData() {
-    // Create sample users
-    const users: (InsertUser & { id: number })[] = [
-      {
-        id: 1,
-        username: "sarah_johnson",
-        email: "sarah@example.com",
-        password: "password123",
-        confirmPassword: "password123",
-        fullName: "Sarah Johnson",
-        age: 28,
-        school: "Stanford University",
-        background: "Product designer passionate about sustainable technology and creating user experiences that make a positive impact on the world.",
-        aspirations: "Building the next generation of eco-friendly mobile applications that seamlessly integrate sustainable practices into daily life.",
-        interests: ["UI/UX Design", "Rock Climbing", "Sustainability", "Photography", "Coffee"],
-        socialLinks: {
-          linkedin: "https://linkedin.com/in/sarah-johnson",
-          website: "https://sarahjohnson.design"
-        },
-        profilePhoto: "https://pixabay.com/get/ga4d443bccc8a0e70fba5320bd0cf771f32843c0ce04b606d76263be56203e0c69e80a8d883a18afb6ee8e0e0d71647930918b0d1d8f5326fd40bd767b9f806d6_1280.jpg"
-      },
-      {
-        id: 2,
-        username: "michael_chen",
-        email: "michael@example.com",
-        password: "password123",
-        confirmPassword: "password123",
-        fullName: "Michael Chen",
-        age: 26,
-        school: "UC Berkeley",
-        background: "Software engineer building AI solutions for social good.",
-        aspirations: "Developing machine learning models that can help solve climate change and social inequality.",
-        interests: ["AI/ML", "Chess", "Hiking", "Cooking"],
-        socialLinks: {
-          linkedin: "https://linkedin.com/in/michael-chen",
-          website: "https://michaelchen.dev"
-        },
-        profilePhoto: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&h=400"
-      }
-    ];
-
-    users.forEach(user => {
-      const { confirmPassword, ...userData } = user;
-      this.users.set(user.id, {
-        ...userData,
-        createdAt: new Date()
-      });
-    });
-
-    this.currentUserId = users.length + 1;
-  }
-
+export class DatabaseStorage implements IStorage {
   // User operations
   async createUser(user: InsertUser): Promise<UserProfile> {
-    const id = this.currentUserId++;
     const { confirmPassword, ...userData } = user;
-    const newUser: User = {
-      ...userData,
-      id,
-      createdAt: new Date(),
-    };
-    this.users.set(id, newUser);
+    const [newUser] = await db
+      .insert(users)
+      .values(userData)
+      .returning();
+    
     const { password, ...userProfile } = newUser;
     return userProfile;
   }
 
   async getUserById(id: number): Promise<UserProfile | undefined> {
-    const user = this.users.get(id);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
     if (!user) return undefined;
+    
     const { password, ...userProfile } = user;
     return userProfile;
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(user => user.email === email);
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user || undefined;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(user => user.username === username);
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
   }
 
   async updateUser(id: number, updates: Partial<Omit<User, 'id' | 'createdAt'>>): Promise<UserProfile> {
-    const user = this.users.get(id);
-    if (!user) throw new Error('User not found');
+    const [updatedUser] = await db
+      .update(users)
+      .set(updates)
+      .where(eq(users.id, id))
+      .returning();
     
-    const updatedUser = { ...user, ...updates };
-    this.users.set(id, updatedUser);
+    if (!updatedUser) throw new Error('User not found');
+    
     const { password, ...userProfile } = updatedUser;
     return userProfile;
   }
 
   // Event operations
   async createEvent(event: InsertEvent & { hostId: number }): Promise<Event> {
-    const id = this.currentEventId++;
     const qrCode = nanoid(12);
-    const newEvent: Event = {
-      ...event,
-      id,
-      qrCode,
-      createdAt: new Date(),
-    };
-    this.events.set(id, newEvent);
+    const [newEvent] = await db
+      .insert(events)
+      .values({ ...event, qrCode })
+      .returning();
+    
     return newEvent;
   }
 
   async getEventById(id: number): Promise<Event | undefined> {
-    return this.events.get(id);
+    const [event] = await db.select().from(events).where(eq(events.id, id));
+    return event || undefined;
   }
 
   async getEventByQrCode(qrCode: string): Promise<Event | undefined> {
-    return Array.from(this.events.values()).find(event => event.qrCode === qrCode);
+    const [event] = await db.select().from(events).where(eq(events.qrCode, qrCode));
+    return event || undefined;
   }
 
   async getEventsByHostId(hostId: number): Promise<Event[]> {
-    return Array.from(this.events.values()).filter(event => event.hostId === hostId);
+    return await db.select().from(events).where(eq(events.hostId, hostId));
   }
 
   async getAllEvents(): Promise<EventWithHost[]> {
-    const events = Array.from(this.events.values());
-    return events.map(event => {
-      const host = this.users.get(event.hostId);
-      const attendeeCount = Array.from(this.eventAttendees.values())
-        .filter(attendee => attendee.eventId === event.id).length;
-      
-      if (!host) throw new Error('Host not found');
-      const { password, ...hostProfile } = host;
-      
-      return {
-        ...event,
-        host: hostProfile,
-        attendeeCount
-      };
-    });
+    const eventsWithHosts = await db
+      .select({
+        id: events.id,
+        hostId: events.hostId,
+        name: events.name,
+        description: events.description,
+        location: events.location,
+        date: events.date,
+        qrCode: events.qrCode,
+        isActive: events.isActive,
+        createdAt: events.createdAt,
+        hostUser: {
+          id: users.id,
+          username: users.username,
+          email: users.email,
+          password: users.password,
+          fullName: users.fullName,
+          age: users.age,
+          school: users.school,
+          background: users.background,
+          aspirations: users.aspirations,
+          interests: users.interests,
+          socialLinks: users.socialLinks,
+          profilePhoto: users.profilePhoto,
+          createdAt: users.createdAt,
+        },
+        attendeeCount: sql<number>`(SELECT COUNT(*) FROM ${eventAttendees} WHERE ${eventAttendees.eventId} = ${events.id})`
+      })
+      .from(events)
+      .innerJoin(users, eq(events.hostId, users.id));
+
+    return eventsWithHosts.map(event => ({
+      id: event.id,
+      hostId: event.hostId,
+      name: event.name,
+      description: event.description,
+      location: event.location,
+      date: event.date,
+      qrCode: event.qrCode,
+      isActive: event.isActive,
+      createdAt: event.createdAt,
+      host: event.hostUser,
+      attendeeCount: event.attendeeCount
+    }));
   }
 
   async updateEvent(id: number, updates: Partial<Omit<Event, 'id' | 'createdAt'>>): Promise<Event> {
-    const event = this.events.get(id);
-    if (!event) throw new Error('Event not found');
+    const [updatedEvent] = await db
+      .update(events)
+      .set(updates)
+      .where(eq(events.id, id))
+      .returning();
     
-    const updatedEvent = { ...event, ...updates };
-    this.events.set(id, updatedEvent);
+    if (!updatedEvent) throw new Error('Event not found');
     return updatedEvent;
   }
 
   async deleteEvent(id: number): Promise<boolean> {
-    return this.events.delete(id);
+    const result = await db.delete(events).where(eq(events.id, id));
+    return result.rowCount !== null && result.rowCount > 0;
   }
 
   // Event attendee operations
   async joinEvent(eventId: number, userId: number): Promise<EventAttendee> {
-    const existing = Array.from(this.eventAttendees.values())
-      .find(attendee => attendee.eventId === eventId && attendee.userId === userId);
+    // Check if already attending
+    const [existing] = await db
+      .select()
+      .from(eventAttendees)
+      .where(and(eq(eventAttendees.eventId, eventId), eq(eventAttendees.userId, userId)));
     
     if (existing) {
       return existing;
     }
 
-    const id = this.currentEventAttendeeId++;
-    const newAttendee: EventAttendee = {
-      id,
-      eventId,
-      userId,
-      joinedAt: new Date(),
-    };
-    this.eventAttendees.set(id, newAttendee);
+    const [newAttendee] = await db
+      .insert(eventAttendees)
+      .values({ eventId, userId })
+      .returning();
+    
     return newAttendee;
   }
 
   async leaveEvent(eventId: number, userId: number): Promise<boolean> {
-    const attendeeEntry = Array.from(this.eventAttendees.entries())
-      .find(([_, attendee]) => attendee.eventId === eventId && attendee.userId === userId);
+    const result = await db
+      .delete(eventAttendees)
+      .where(and(eq(eventAttendees.eventId, eventId), eq(eventAttendees.userId, userId)));
     
-    if (attendeeEntry) {
-      this.eventAttendees.delete(attendeeEntry[0]);
-      return true;
-    }
-    return false;
+    return result.rowCount !== null && result.rowCount > 0;
   }
 
   async getEventAttendees(eventId: number): Promise<UserProfile[]> {
-    const attendeeIds = Array.from(this.eventAttendees.values())
-      .filter(attendee => attendee.eventId === eventId)
-      .map(attendee => attendee.userId);
-    
-    return attendeeIds.map(id => {
-      const user = this.users.get(id);
-      if (!user) throw new Error('User not found');
-      const { password, ...userProfile } = user;
-      return userProfile;
-    });
+    const attendees = await db
+      .select({
+        id: users.id,
+        username: users.username,
+        email: users.email,
+        fullName: users.fullName,
+        age: users.age,
+        school: users.school,
+        background: users.background,
+        aspirations: users.aspirations,
+        interests: users.interests,
+        socialLinks: users.socialLinks,
+        profilePhoto: users.profilePhoto,
+        createdAt: users.createdAt,
+      })
+      .from(eventAttendees)
+      .innerJoin(users, eq(eventAttendees.userId, users.id))
+      .where(eq(eventAttendees.eventId, eventId));
+
+    return attendees;
   }
 
   async getUserEvents(userId: number): Promise<Event[]> {
-    const eventIds = Array.from(this.eventAttendees.values())
-      .filter(attendee => attendee.userId === userId)
-      .map(attendee => attendee.eventId);
-    
-    return eventIds.map(id => {
-      const event = this.events.get(id);
-      if (!event) throw new Error('Event not found');
-      return event;
-    });
+    const userEvents = await db
+      .select({
+        id: events.id,
+        hostId: events.hostId,
+        name: events.name,
+        description: events.description,
+        location: events.location,
+        date: events.date,
+        qrCode: events.qrCode,
+        isActive: events.isActive,
+        createdAt: events.createdAt,
+      })
+      .from(eventAttendees)
+      .innerJoin(events, eq(eventAttendees.eventId, events.id))
+      .where(eq(eventAttendees.userId, userId));
+
+    return userEvents;
   }
 
   async isUserAttending(eventId: number, userId: number): Promise<boolean> {
-    return Array.from(this.eventAttendees.values())
-      .some(attendee => attendee.eventId === eventId && attendee.userId === userId);
+    const [attendee] = await db
+      .select()
+      .from(eventAttendees)
+      .where(and(eq(eventAttendees.eventId, eventId), eq(eventAttendees.userId, userId)));
+    
+    return !!attendee;
   }
 
   // Connection operations
   async createConnection(connection: InsertConnection): Promise<Connection> {
-    const id = this.currentConnectionId++;
-    const newConnection: Connection = {
-      ...connection,
-      id,
-      createdAt: new Date(),
-    };
-    this.connections.set(id, newConnection);
+    const [newConnection] = await db
+      .insert(connections)
+      .values(connection)
+      .returning();
+    
     return newConnection;
   }
 
   async getUserConnections(userId: number): Promise<UserProfile[]> {
-    const connectionUserIds = Array.from(this.connections.values())
-      .filter(conn => conn.fromUserId === userId || conn.toUserId === userId)
-      .map(conn => conn.fromUserId === userId ? conn.toUserId : conn.fromUserId);
-    
-    return connectionUserIds.map(id => {
-      const user = this.users.get(id);
-      if (!user) throw new Error('User not found');
-      const { password, ...userProfile } = user;
-      return userProfile;
-    });
+    const userConnections = await db
+      .select({
+        id: users.id,
+        username: users.username,
+        email: users.email,
+        fullName: users.fullName,
+        age: users.age,
+        school: users.school,
+        background: users.background,
+        aspirations: users.aspirations,
+        interests: users.interests,
+        socialLinks: users.socialLinks,
+        profilePhoto: users.profilePhoto,
+        createdAt: users.createdAt,
+      })
+      .from(connections)
+      .innerJoin(users, sql`${users.id} = CASE 
+        WHEN ${connections.fromUserId} = ${userId} THEN ${connections.toUserId}
+        ELSE ${connections.fromUserId}
+      END`)
+      .where(sql`${connections.fromUserId} = ${userId} OR ${connections.toUserId} = ${userId}`);
+
+    return userConnections;
   }
 
   async getEventConnections(eventId: number, userId: number): Promise<UserProfile[]> {
-    const connectionUserIds = Array.from(this.connections.values())
-      .filter(conn => conn.eventId === eventId && 
-        (conn.fromUserId === userId || conn.toUserId === userId))
-      .map(conn => conn.fromUserId === userId ? conn.toUserId : conn.fromUserId);
-    
-    return connectionUserIds.map(id => {
-      const user = this.users.get(id);
-      if (!user) throw new Error('User not found');
-      const { password, ...userProfile } = user;
-      return userProfile;
-    });
+    const eventConnections = await db
+      .select({
+        id: users.id,
+        username: users.username,
+        email: users.email,
+        fullName: users.fullName,
+        age: users.age,
+        school: users.school,
+        background: users.background,
+        aspirations: users.aspirations,
+        interests: users.interests,
+        socialLinks: users.socialLinks,
+        profilePhoto: users.profilePhoto,
+        createdAt: users.createdAt,
+      })
+      .from(connections)
+      .innerJoin(users, sql`${users.id} = CASE 
+        WHEN ${connections.fromUserId} = ${userId} THEN ${connections.toUserId}
+        ELSE ${connections.fromUserId}
+      END`)
+      .where(and(
+        eq(connections.eventId, eventId),
+        sql`${connections.fromUserId} = ${userId} OR ${connections.toUserId} = ${userId}`
+      ));
+
+    return eventConnections;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();

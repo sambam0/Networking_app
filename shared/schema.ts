@@ -1,4 +1,5 @@
 import { pgTable, text, serial, integer, boolean, timestamp, json } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -44,6 +45,51 @@ export const connections = pgTable("connections", {
   eventId: integer("event_id").references(() => events.id).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+// Relations
+export const usersRelations = relations(users, ({ many }) => ({
+  hostedEvents: many(events),
+  eventAttendees: many(eventAttendees),
+  connectionsFrom: many(connections, { relationName: "fromUser" }),
+  connectionsTo: many(connections, { relationName: "toUser" }),
+}));
+
+export const eventsRelations = relations(events, ({ one, many }) => ({
+  host: one(users, {
+    fields: [events.hostId],
+    references: [users.id],
+  }),
+  attendees: many(eventAttendees),
+  connections: many(connections),
+}));
+
+export const eventAttendeesRelations = relations(eventAttendees, ({ one }) => ({
+  event: one(events, {
+    fields: [eventAttendees.eventId],
+    references: [events.id],
+  }),
+  user: one(users, {
+    fields: [eventAttendees.userId],
+    references: [users.id],
+  }),
+}));
+
+export const connectionsRelations = relations(connections, ({ one }) => ({
+  fromUser: one(users, {
+    fields: [connections.fromUserId],
+    references: [users.id],
+    relationName: "fromUser",
+  }),
+  toUser: one(users, {
+    fields: [connections.toUserId],
+    references: [users.id],
+    relationName: "toUser",
+  }),
+  event: one(events, {
+    fields: [connections.eventId],
+    references: [events.id],
+  }),
+}));
 
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({

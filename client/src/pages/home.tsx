@@ -59,7 +59,7 @@ export default function Home() {
         </div>
       </section>
       {/* Features Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
+<section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">How RealConnect Works</h2>
@@ -100,7 +100,7 @@ export default function Home() {
         </div>
       </section>
       {/* Event Creation Demo */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-muted/30">
+      <section className="py-8 px-4 sm:px-6 lg:px-8 bg-muted/30">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col lg:grid lg:grid-cols-2 gap-12 items-center lg:items-start">
             <div className="order-2 lg:order-1 w-full">

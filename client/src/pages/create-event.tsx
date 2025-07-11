@@ -78,7 +78,7 @@ export default function CreateEvent() {
     <div className="min-h-screen bg-background">
       <Navbar />
       
-      <div className="max-w-6xl mx-auto px-2 sm:px-6 lg:px-8 py-4 sm:py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         <div className="mb-4 sm:mb-8 text-center">
           <h1 className="text-3xl font-bold text-foreground mb-2">Create New Event</h1>
           <p className="text-muted-foreground">

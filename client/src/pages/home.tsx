@@ -14,7 +14,6 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      
       {/* Hero Section */}
       <section className="relative py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto text-center">
@@ -59,7 +58,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
       {/* Features Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
@@ -101,7 +99,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
       {/* Event Creation Demo */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-muted/30">
         <div className="max-w-7xl mx-auto">
@@ -127,7 +124,7 @@ export default function Home() {
             </div>
             
             <Card className="bg-card shadow-lg">
-              <CardContent className="p-8">
+              <CardContent className="p-8 text-justify">
                 <h3 className="text-xl font-semibold text-foreground mb-6">Create New Event</h3>
                 <div className="space-y-6">
                   <div>
@@ -171,7 +168,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
       {/* Sample Attendees */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
@@ -246,7 +242,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
       {/* CTA Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
@@ -269,7 +264,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
       <Footer />
     </div>
   );

@@ -102,7 +102,7 @@ export default function Home() {
       {/* Event Creation Demo */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-muted/30">
         <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="grid lg:grid-cols-2 gap-12 items-center justify-items-center lg:justify-items-stretch">
             <div>
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">Create Events That Matter</h2>
               <p className="text-xl text-muted-foreground mb-8">Host gatherings where authentic connections flourish. Generate unique QR codes and watch meaningful conversations unfold.</p>
@@ -123,8 +123,8 @@ export default function Home() {
               </div>
             </div>
             
-            <Card className="bg-card shadow-lg">
-              <CardContent className="p-8 text-justify">
+            <Card className="bg-card shadow-lg mx-auto max-w-lg lg:max-w-none">
+              <CardContent className="p-8">
                 <h3 className="text-xl font-semibold text-foreground mb-6">Create New Event</h3>
                 <div className="space-y-6">
                   <div>

@@ -102,8 +102,8 @@ export default function Home() {
       {/* Event Creation Demo */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-muted/30">
         <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center lg:items-start">
-            <div className="order-2 lg:order-1">
+          <div className="flex flex-col lg:grid lg:grid-cols-2 gap-12 items-center lg:items-start">
+            <div className="order-2 lg:order-1 w-full">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">Create Events That Matter</h2>
               <p className="text-xl text-muted-foreground mb-8">Host gatherings where authentic connections flourish. Generate unique QR codes and watch meaningful conversations unfold.</p>
               
@@ -123,28 +123,28 @@ export default function Home() {
               </div>
             </div>
             
-            <div className="order-1 lg:order-2 flex justify-center">
-              <Card className="bg-card shadow-lg w-full max-w-md mx-auto lg:max-w-none lg:mx-0">
-              <CardContent className="p-8">
-                <h3 className="text-xl font-semibold text-foreground mb-6">Create New Event</h3>
-                <div className="space-y-6">
+            <div className="order-1 lg:order-2 w-full flex justify-center">
+              <Card className="bg-card shadow-lg w-full max-w-sm mx-auto lg:max-w-none lg:mx-0">
+              <CardContent className="p-4 sm:p-6 lg:p-8">
+                <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-4 sm:mb-6">Create New Event</h3>
+                <div className="space-y-4 sm:space-y-6">
                   <div>
                     <label className="block text-sm font-medium text-muted-foreground mb-2">Event Name</label>
-                    <div className="w-full px-4 py-3 bg-input border border-border rounded-xl text-foreground">
+                    <div className="w-full px-3 py-2 sm:px-4 sm:py-3 bg-input border border-border rounded-xl text-foreground text-sm sm:text-base">
                       Summer Networking Mixer
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-2 sm:gap-4">
                     <div>
                       <label className="block text-sm font-medium text-muted-foreground mb-2">Date</label>
-                      <div className="w-full px-4 py-3 bg-input border border-border rounded-xl text-foreground">
+                      <div className="w-full px-3 py-2 sm:px-4 sm:py-3 bg-input border border-border rounded-xl text-foreground text-sm sm:text-base">
                         July 15, 2024
                       </div>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-muted-foreground mb-2">Time</label>
-                      <div className="w-full px-4 py-3 bg-input border border-border rounded-xl text-foreground">
+                      <div className="w-full px-3 py-2 sm:px-4 sm:py-3 bg-input border border-border rounded-xl text-foreground text-sm sm:text-base">
                         7:00 PM
                       </div>
                     </div>
@@ -152,13 +152,13 @@ export default function Home() {
                   
                   <div>
                     <label className="block text-sm font-medium text-muted-foreground mb-2">Location</label>
-                    <div className="w-full px-4 py-3 bg-input border border-border rounded-xl text-foreground">
+                    <div className="w-full px-3 py-2 sm:px-4 sm:py-3 bg-input border border-border rounded-xl text-foreground text-sm sm:text-base">
                       The Rooftop Lounge, 123 Main St
                     </div>
                   </div>
                   
                   <Link href="/create-event">
-                    <Button className="w-full py-4 text-lg">
+                    <Button className="w-full py-3 sm:py-4 text-base sm:text-lg">
                       <QrCode className="h-5 w-5 mr-2" />
                       Generate QR Code & Create Event
                     </Button>

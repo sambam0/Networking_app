@@ -59,46 +59,46 @@ export default function Home() {
         </div>
       </section>
       {/* Features Section */}
-<section className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">How RealConnect Works</h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">Simple steps to meaningful connections</p>
-          </div>
-          
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3 md:gap-8">
-            <Card className="bg-card text-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 hover:border-primary/50 cursor-pointer group">
-              <CardContent className="p-8">
-                <div className="bg-primary/20 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6 group-hover:bg-primary/30 transition-all duration-300">
-                  <QrCode className="h-8 w-8 text-primary group-hover:scale-110 transition-all duration-300" />
+      <section className="py-20 px-4 sm:px-6 lg:px-8">
+              <div className="max-w-7xl mx-auto">
+                <div className="text-center mb-16">
+                  <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">How RealConnect Works</h2>
+                  <p className="text-xl text-muted-foreground max-w-2xl mx-auto">Simple steps to meaningful connections</p>
                 </div>
-                <h3 className="text-xl font-semibold text-foreground mb-4 group-hover:text-primary transition-colors duration-300">Scan & Join</h3>
-                <p className="text-muted-foreground">Use your phone to scan the event QR code and instantly join the guest list</p>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-card text-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 hover:border-secondary/50 cursor-pointer group">
-              <CardContent className="p-8">
-                <div className="bg-secondary/20 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6 group-hover:bg-secondary/30 transition-all duration-300">
-                  <UserCheck className="h-8 w-8 text-secondary group-hover:scale-110 transition-all duration-300" />
+                
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-3 md:gap-8">
+                  <Card className="bg-card text-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 hover:border-primary/50 cursor-pointer group">
+                    <CardContent className="p-8">
+                      <div className="bg-primary/20 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6 group-hover:bg-primary/30 transition-all duration-300">
+                        <QrCode className="h-8 w-8 text-primary group-hover:scale-110 transition-all duration-300" />
+                      </div>
+                      <h3 className="font-semibold text-foreground mb-4 group-hover:text-primary transition-colors duration-300 text-[22px]">Scan & Join</h3>
+                      <p className="text-muted-foreground">Use your phone to scan the event QR code and instantly join the guest list</p>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="bg-card text-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 hover:border-secondary/50 cursor-pointer group">
+                    <CardContent className="p-8">
+                      <div className="bg-secondary/20 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6 group-hover:bg-secondary/30 transition-all duration-300">
+                        <UserCheck className="h-8 w-8 text-secondary group-hover:scale-110 transition-all duration-300" />
+                      </div>
+                      <h3 className="text-xl font-semibold text-foreground mb-4 group-hover:text-secondary transition-colors duration-300">Share Your Story</h3>
+                      <p className="text-muted-foreground">Create a profile with your interests, aspirations, and conversation starters</p>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="bg-card text-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 hover:border-accent/50 cursor-pointer group">
+                    <CardContent className="p-8">
+                      <div className="bg-accent/20 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6 group-hover:bg-accent/30 transition-all duration-300">
+                        <MessageCircle className="h-8 w-8 text-accent group-hover:scale-110 transition-all duration-300" />
+                      </div>
+                      <h3 className="text-xl font-semibold text-foreground mb-4 group-hover:text-accent transition-colors duration-300">Connect Meaningfully</h3>
+                      <p className="text-muted-foreground">Browse attendees and start conversations based on shared interests</p>
+                    </CardContent>
+                  </Card>
                 </div>
-                <h3 className="text-xl font-semibold text-foreground mb-4 group-hover:text-secondary transition-colors duration-300">Share Your Story</h3>
-                <p className="text-muted-foreground">Create a profile with your interests, aspirations, and conversation starters</p>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-card text-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 hover:border-accent/50 cursor-pointer group">
-              <CardContent className="p-8">
-                <div className="bg-accent/20 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6 group-hover:bg-accent/30 transition-all duration-300">
-                  <MessageCircle className="h-8 w-8 text-accent group-hover:scale-110 transition-all duration-300" />
-                </div>
-                <h3 className="text-xl font-semibold text-foreground mb-4 group-hover:text-accent transition-colors duration-300">Connect Meaningfully</h3>
-                <p className="text-muted-foreground">Browse attendees and start conversations based on shared interests</p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
+              </div>
+            </section>
       {/* Event Creation Demo */}
       <section className="py-8 px-4 sm:px-6 lg:px-8 bg-muted/30">
         <div className="max-w-7xl mx-auto">

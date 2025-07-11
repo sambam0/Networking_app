@@ -78,15 +78,15 @@ export default function CreateEvent() {
     <div className="min-h-screen bg-background">
       <Navbar />
       
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold text-foreground mb-2">Create New Event</h1>
           <p className="text-muted-foreground">
             Host a gathering where authentic connections flourish
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8">
+        <div className="grid lg:grid-cols-2 gap-8 items-start">
           {/* Event Form */}
           <Card>
             <CardHeader>

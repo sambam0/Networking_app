@@ -124,47 +124,49 @@ export default function Home() {
             </div>
             
             <div className="order-1 lg:order-2 w-full flex justify-center">
-              <Card className="bg-card shadow-lg w-full max-w-sm mx-auto lg:max-w-none lg:mx-0">
-              <CardContent className="p-4 sm:p-6 lg:p-8">
-                <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-4 sm:mb-6">Create New Event</h3>
-                <div className="space-y-4 sm:space-y-6">
-                  <div>
-                    <label className="block text-sm font-medium text-muted-foreground mb-2">Event Name</label>
-                    <div className="w-full px-3 py-2 sm:px-4 sm:py-3 bg-input border border-border rounded-xl text-foreground text-sm sm:text-base">
-                      Summer Networking Mixer
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-2 sm:gap-4">
+              <Card className="bg-card shadow-lg w-full max-w-sm mx-auto lg:max-w-none lg:mx-0 h-fit">
+                <CardContent className="p-6 sm:p-6 lg:p-8">
+                  <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-6">Create New Event</h3>
+                  <div className="space-y-5">
                     <div>
-                      <label className="block text-sm font-medium text-muted-foreground mb-2">Date</label>
-                      <div className="w-full px-3 py-2 sm:px-4 sm:py-3 bg-input border border-border rounded-xl text-foreground text-sm sm:text-base">
-                        July 15, 2024
+                      <label className="block text-sm font-medium text-muted-foreground mb-2">Event Name</label>
+                      <div className="w-full px-4 py-3 bg-input border border-border rounded-xl text-foreground text-sm sm:text-base">
+                        Summer Networking Mixer
                       </div>
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-muted-foreground mb-2">Time</label>
-                      <div className="w-full px-3 py-2 sm:px-4 sm:py-3 bg-input border border-border rounded-xl text-foreground text-sm sm:text-base">
-                        7:00 PM
+                    
+                    <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-muted-foreground mb-2">Date</label>
+                        <div className="w-full px-4 py-3 bg-input border border-border rounded-xl text-foreground text-sm sm:text-base">
+                          July 15, 2024
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-muted-foreground mb-2">Time</label>
+                        <div className="w-full px-4 py-3 bg-input border border-border rounded-xl text-foreground text-sm sm:text-base">
+                          7:00 PM
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-muted-foreground mb-2">Location</label>
-                    <div className="w-full px-3 py-2 sm:px-4 sm:py-3 bg-input border border-border rounded-xl text-foreground text-sm sm:text-base">
-                      The Rooftop Lounge, 123 Main St
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-muted-foreground mb-2">Location</label>
+                      <div className="w-full px-4 py-3 bg-input border border-border rounded-xl text-foreground text-sm sm:text-base">
+                        The Rooftop Lounge, 123 Main St
+                      </div>
+                    </div>
+                    
+                    <div className="pt-2">
+                      <Link href="/create-event">
+                        <Button className="w-full py-4 text-base sm:text-lg">
+                          <QrCode className="h-5 w-5 mr-2" />
+                          Generate QR Code & Create Event
+                        </Button>
+                      </Link>
                     </div>
                   </div>
-                  
-                  <Link href="/create-event">
-                    <Button className="w-full py-3 sm:py-4 text-base sm:text-lg">
-                      <QrCode className="h-5 w-5 mr-2" />
-                      Generate QR Code & Create Event
-                    </Button>
-                  </Link>
-                </div>
-              </CardContent>
+                </CardContent>
               </Card>
             </div>
           </div>

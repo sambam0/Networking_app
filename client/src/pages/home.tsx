@@ -17,7 +17,7 @@ export default function Home() {
       {/* Hero Section */}
       <section className="relative py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto text-center">
-          <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6">
+          <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6 pt-[5px] pb-[5px]">
             Connect <span className="gradient-text">Authentically</span> at Every Event
           </h1>
           <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto">
@@ -92,7 +92,7 @@ export default function Home() {
                       <div className="bg-accent/20 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6 group-hover:bg-accent/30 transition-all duration-300">
                         <MessageCircle className="h-8 w-8 text-accent group-hover:scale-110 transition-all duration-300" />
                       </div>
-                      <h3 className="text-xl font-semibold text-foreground mb-4 group-hover:text-accent transition-colors duration-300">Connect Meaningfully</h3>
+                      <h3 className="font-semibold text-foreground mb-4 group-hover:text-accent transition-colors duration-300 text-[22px]">Connect Meaningfully</h3>
                       <p className="text-muted-foreground">Browse attendees and start conversations based on shared interests</p>
                     </CardContent>
                   </Card>

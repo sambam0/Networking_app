@@ -86,7 +86,7 @@ export default function CreateEvent() {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-4 lg:gap-8 items-start">
+        <div className="grid lg:grid-cols-2 gap-6 items-start">
           {/* Event Form */}
           <Card>
             <CardHeader>

@@ -87,7 +87,9 @@
     font-family: 'Poppins', 'Inter', sans-serif;
   }
 
-
+  html, body {
+    overflow-x: hidden;
+  }
 }
 
 @layer utilities {

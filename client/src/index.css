@@ -3,6 +3,31 @@
 @tailwind utilities;
 
 :root {
+  --background: hsl(0, 0%, 100%);
+  --foreground: hsl(222.2, 84%, 4.9%);
+  --muted: hsl(210, 40%, 96%);
+  --muted-foreground: hsl(215.4, 16.3%, 46.9%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(222.2, 84%, 4.9%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(222.2, 84%, 4.9%);
+  --border: hsl(214.3, 31.8%, 91.4%);
+  --input: hsl(214.3, 31.8%, 91.4%);
+  --primary: hsl(262, 90%, 69%);
+  --primary-foreground: hsl(210, 20%, 98%);
+  --secondary: hsl(176, 50%, 60%);
+  --secondary-foreground: hsl(222.2, 84%, 4.9%);
+  --accent: hsl(304, 80%, 79%);
+  --accent-foreground: hsl(222.2, 84%, 4.9%);
+  --destructive: hsl(0, 84.2%, 60.2%);
+  --destructive-foreground: hsl(210, 40%, 98%);
+  --success: hsl(142, 50%, 58%);
+  --success-foreground: hsl(210, 40%, 98%);
+  --ring: hsl(262, 90%, 69%);
+  --radius: 0.75rem;
+}
+
+:root.light {
   --background: hsl(26, 22%, 95%);
   --foreground: hsl(20, 14.3%, 4.1%);
   --muted: hsl(60, 4.8%, 95.9%);
@@ -62,9 +87,7 @@
     font-family: 'Poppins', 'Inter', sans-serif;
   }
 
-  html {
-    @apply dark;
-  }
+
 }
 
 @layer utilities {

@@ -165,7 +165,7 @@ export default function CreateEvent() {
 
                   <Button 
                     type="submit" 
-                    className="w-full py-4 text-lg"
+                    className="w-full py-4 text-lg mt-8"
                     disabled={createEventMutation.isPending}
                   >
                     <QrCode className="h-5 w-5 mr-2" />

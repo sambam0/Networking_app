@@ -154,8 +154,14 @@ export default function CreateEvent() {
                           <Input 
                             type="datetime-local" 
                             {...field} 
-                            value={field.value instanceof Date ? field.value.toISOString().slice(0, 16) : field.value}
-                            onChange={(e) => field.onChange(new Date(e.target.value))}
+                            value={field.value instanceof Date ? 
+                              new Date(field.value.getTime() - field.value.getTimezoneOffset() * 60000).toISOString().slice(0, 16) : 
+                              field.value
+                            }
+                            onChange={(e) => {
+                              const selectedDate = new Date(e.target.value);
+                              field.onChange(selectedDate);
+                            }}
                           />
                         </FormControl>
                         <FormMessage />
@@ -197,7 +203,7 @@ export default function CreateEvent() {
                     <Clock className="h-4 w-4" />
                     <span>
                       {form.watch('date') ? new Date(form.watch('date')).toLocaleDateString() : 'Date'} • 
-                      {form.watch('date') ? new Date(form.watch('date')).toLocaleTimeString() : 'Time'}
+                      {form.watch('date') ? new Date(form.watch('date')).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Time'}
                     </span>
                   </div>
                   <div className="flex items-center space-x-2 text-sm text-muted-foreground">

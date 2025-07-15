@@ -107,6 +107,10 @@ export const insertEventSchema = createInsertSchema(events).omit({
   hostId: true,
   qrCode: true,
   createdAt: true,
+}).extend({
+  date: z.union([z.date(), z.string().datetime()]).transform((val) => {
+    return typeof val === 'string' ? new Date(val) : val;
+  }),
 });
 
 export const insertEventAttendeeSchema = createInsertSchema(eventAttendees).omit({

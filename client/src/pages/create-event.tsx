@@ -57,7 +57,12 @@ export default function CreateEvent() {
   });
 
   const onSubmit = (data: any) => {
-    createEventMutation.mutate(data);
+    // Ensure the date is properly formatted
+    const formattedData = {
+      ...data,
+      date: data.date instanceof Date ? data.date.toISOString() : data.date
+    };
+    createEventMutation.mutate(formattedData);
   };
 
   if (!user) {

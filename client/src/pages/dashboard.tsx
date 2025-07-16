@@ -1,16 +1,22 @@
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import Navbar from "@/components/layout/navbar";
-import { Calendar, Users, Plus, Clock, MapPin } from "lucide-react";
+import { Calendar, Users, Plus, Clock, MapPin, QrCode } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { type Event, type EventWithHost } from "@shared/schema";
+import { useState } from "react";
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const [, setLocation] = useLocation();
+  const [qrCodeInput, setQrCodeInput] = useState("");
+  const [joinDialogOpen, setJoinDialogOpen] = useState(false);
   
   const { data: events, isLoading: eventsLoading } = useQuery({
     queryKey: ['/api/events'],
@@ -23,6 +29,12 @@ export default function Dashboard() {
   const { data: hostedEvents, isLoading: hostedEventsLoading } = useQuery({
     queryKey: ['/api/user/hosted-events'],
   });
+
+  const handleJoinEvent = () => {
+    if (qrCodeInput.trim()) {
+      setLocation(`/join/${qrCodeInput.trim()}`);
+    }
+  };
 
   if (!user) {
     return (
@@ -56,7 +68,7 @@ export default function Dashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid md:grid-cols-2 gap-4 mb-8">
+        <div className="grid md:grid-cols-3 gap-4 mb-8">
           <Link href="/create-event">
             <Card className="bg-primary hover:bg-primary/90 transition-colors cursor-pointer">
               <CardContent className="p-6">
@@ -71,14 +83,73 @@ export default function Dashboard() {
             </Card>
           </Link>
 
+          <Dialog open={joinDialogOpen} onOpenChange={setJoinDialogOpen}>
+            <DialogTrigger asChild>
+              <Card className="bg-secondary hover:bg-secondary/90 transition-colors cursor-pointer">
+                <CardContent className="p-6">
+                  <div className="flex items-center space-x-4">
+                    <QrCode className="h-8 w-8 text-secondary-foreground" />
+                    <div>
+                      <h3 className="text-lg font-semibold text-secondary-foreground">Join Event</h3>
+                      <p className="text-secondary-foreground/80">Scan QR code to join an event</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle className="flex items-center space-x-2">
+                  <QrCode className="h-5 w-5" />
+                  <span>Join Event</span>
+                </DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    Enter QR Code or Event Code
+                  </label>
+                  <Input
+                    placeholder="Enter event code..."
+                    value={qrCodeInput}
+                    onChange={(e) => setQrCodeInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        handleJoinEvent();
+                      }
+                    }}
+                  />
+                </div>
+                <div className="flex gap-3">
+                  <Button 
+                    onClick={handleJoinEvent}
+                    disabled={!qrCodeInput.trim()}
+                    className="flex-1"
+                  >
+                    Join Event
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    onClick={() => setJoinDialogOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+                <p className="text-sm text-muted-foreground text-center">
+                  Get the event code from the host or scan their QR code
+                </p>
+              </div>
+            </DialogContent>
+          </Dialog>
+
           <Link href="/profile">
-            <Card className="bg-secondary hover:bg-secondary/90 transition-colors cursor-pointer">
+            <Card className="bg-accent hover:bg-accent/90 transition-colors cursor-pointer">
               <CardContent className="p-6">
                 <div className="flex items-center space-x-4">
-                  <Users className="h-8 w-8 text-secondary-foreground" />
+                  <Users className="h-8 w-8 text-accent-foreground" />
                   <div>
-                    <h3 className="text-lg font-semibold text-secondary-foreground">Update Profile</h3>
-                    <p className="text-secondary-foreground/80">Keep your information current</p>
+                    <h3 className="text-lg font-semibold text-accent-foreground">Update Profile</h3>
+                    <p className="text-accent-foreground/80">Keep your information current</p>
                   </div>
                 </div>
               </CardContent>

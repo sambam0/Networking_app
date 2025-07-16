@@ -120,7 +120,6 @@ export class DatabaseStorage implements IStorage {
           id: users.id,
           username: users.username,
           email: users.email,
-          password: users.password,
           fullName: users.fullName,
           age: users.age,
           school: users.school,
@@ -146,7 +145,20 @@ export class DatabaseStorage implements IStorage {
       qrCode: event.qrCode,
       isActive: event.isActive,
       createdAt: event.createdAt,
-      host: event.hostUser,
+      host: {
+        id: event.hostUser.id,
+        username: event.hostUser.username,
+        email: event.hostUser.email,
+        fullName: event.hostUser.fullName,
+        age: event.hostUser.age,
+        school: event.hostUser.school,
+        background: event.hostUser.background,
+        aspirations: event.hostUser.aspirations,
+        interests: event.hostUser.interests,
+        socialLinks: event.hostUser.socialLinks,
+        profilePhoto: event.hostUser.profilePhoto,
+        createdAt: event.hostUser.createdAt,
+      },
       attendeeCount: event.attendeeCount
     }));
   }
@@ -249,6 +261,20 @@ export class DatabaseStorage implements IStorage {
 
   // Connection operations
   async createConnection(connection: InsertConnection): Promise<Connection> {
+    // Check if connection already exists (bidirectional)
+    const [existing] = await db
+      .select()
+      .from(connections)
+      .where(and(
+        eq(connections.eventId, connection.eventId),
+        sql`(${connections.fromUserId} = ${connection.fromUserId} AND ${connections.toUserId} = ${connection.toUserId}) OR 
+            (${connections.fromUserId} = ${connection.toUserId} AND ${connections.toUserId} = ${connection.fromUserId})`
+      ));
+    
+    if (existing) {
+      return existing;
+    }
+
     const [newConnection] = await db
       .insert(connections)
       .values(connection)

@@ -3,6 +3,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -32,6 +33,9 @@ export default function ProfileModal({ user, isOpen, onClose, onConnect }: Profi
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="sr-only">Profile Details</DialogTitle>
+          <DialogDescription className="sr-only">
+            View detailed profile information for {user.fullName}
+          </DialogDescription>
         </DialogHeader>
         
         <div className="grid md:grid-cols-3 gap-8">

@@ -85,7 +85,13 @@ export default function SignUp() {
         formData.append('profilePhoto', profilePhoto);
       }
 
-      await signup(data);
+      // If there's a photo, use FormData, otherwise use raw data
+      const submitData = profilePhoto ? formData : {
+        ...data,
+        interests: interests,
+      };
+
+      await signup(submitData);
       toast({
         title: "Welcome to RealConnect!",
         description: "Your profile has been created successfully.",
@@ -194,7 +200,7 @@ export default function SignUp() {
                         <FormItem>
                           <FormLabel>Age</FormLabel>
                           <FormControl>
-                            <Input type="number" placeholder="28" {...field} onChange={(e) => field.onChange(parseInt(e.target.value))} />
+                            <Input type="number" placeholder="28" {...field} onChange={(e) => field.onChange(parseInt(e.target.value) || 18)} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

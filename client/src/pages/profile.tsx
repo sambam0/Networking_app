@@ -234,7 +234,7 @@ export default function Profile() {
                                     type="number" 
                                     placeholder="28" 
                                     {...field} 
-                                    onChange={(e) => field.onChange(parseInt(e.target.value))} 
+                                    onChange={(e) => field.onChange(parseInt(e.target.value) || 18)} 
                                   />
                                 </FormControl>
                                 <FormMessage />

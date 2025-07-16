@@ -7,6 +7,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
 import Navbar from "@/components/layout/navbar";
+import EventRecommendations from "@/components/recommendations/event-recommendations";
+import PeopleRecommendations from "@/components/recommendations/people-recommendations";
 import { Calendar, Users, Plus, Clock, MapPin, QrCode } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { type Event, type EventWithHost } from "@shared/schema";
@@ -305,6 +307,12 @@ export default function Dashboard() {
               </CardContent>
             </Card>
           </div>
+        </div>
+
+        {/* Recommendations Section */}
+        <div className="mt-8 space-y-8">
+          <EventRecommendations />
+          <PeopleRecommendations />
         </div>
       </div>
     </div>

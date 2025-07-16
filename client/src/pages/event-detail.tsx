@@ -10,6 +10,7 @@ import { useAuth } from "@/lib/auth";
 import Navbar from "@/components/layout/navbar";
 import QRCode from "@/components/event/qr-code";
 import AttendeeGrid from "@/components/event/attendee-grid";
+import PeopleRecommendations from "@/components/recommendations/people-recommendations";
 import { Calendar, MapPin, Clock, Users, UserPlus, UserMinus } from "lucide-react";
 import { type EventWithAttendees } from "@shared/schema";
 
@@ -242,6 +243,11 @@ export default function EventDetail() {
                 <AttendeeGrid eventId={parseInt(id)} onConnect={handleConnect} />
               </CardContent>
             </Card>
+
+            {/* People Recommendations for this Event */}
+            {isAttending && (
+              <PeopleRecommendations eventId={parseInt(id)} onConnect={handleConnect} />
+            )}
           </div>
 
           {/* QR Code and Host Info */}

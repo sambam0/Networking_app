@@ -1,5 +1,7 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Download, Share2, Copy } from "lucide-react";
 import { generateQRCodeDataURL, downloadQRCode } from "@/lib/qr-utils";
 import { useToast } from "@/hooks/use-toast";
@@ -10,11 +12,23 @@ interface QRCodeProps {
 }
 
 export default function QRCode({ event }: QRCodeProps) {
-  const qrCodeDataURL = generateQRCodeDataURL(event.qrCode);
+  const [qrCodeDataURL, setQrCodeDataURL] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  const handleDownload = () => {
-    downloadQRCode(event.qrCode, `${event.name}-qr-code.png`);
+  useEffect(() => {
+    const generateQR = async () => {
+      setIsLoading(true);
+      const joinUrl = `${window.location.origin}/join/${event.qrCode}`;
+      const dataURL = await generateQRCodeDataURL(joinUrl);
+      setQrCodeDataURL(dataURL);
+      setIsLoading(false);
+    };
+    generateQR();
+  }, [event.qrCode]);
+
+  const handleDownload = async () => {
+    await downloadQRCode(`${window.location.origin}/join/${event.qrCode}`, `${event.name}-qr-code.png`);
   };
 
   const handleShare = async () => {
@@ -51,11 +65,15 @@ export default function QRCode({ event }: QRCodeProps) {
       </CardHeader>
       <CardContent>
         <div className="bg-white rounded-xl p-6 text-center mb-6">
-          <img 
-            src={qrCodeDataURL} 
-            alt="Event QR Code" 
-            className="mx-auto mb-4 rounded-lg"
-          />
+          {isLoading ? (
+            <Skeleton className="w-64 h-64 mx-auto mb-4" />
+          ) : (
+            <img 
+              src={qrCodeDataURL} 
+              alt="Event QR Code" 
+              className="mx-auto mb-4 rounded-lg w-64 h-64"
+            />
+          )}
           <p className="text-gray-800 font-medium">{event.name}</p>
           <p className="text-gray-600 text-sm">
             {new Date(event.date).toLocaleDateString()} • {new Date(event.date).toLocaleTimeString()}

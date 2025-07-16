@@ -308,6 +308,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Recommendation routes
+  app.get('/api/recommendations/events', requireAuth, async (req, res) => {
+    try {
+      const recommendedEvents = await storage.getRecommendedEvents(req.session.user.id);
+      res.json(recommendedEvents);
+    } catch (error) {
+      res.status(500).json({ message: 'Server error' });
+    }
+  });
+
+  app.get('/api/recommendations/people', requireAuth, async (req, res) => {
+    try {
+      const eventId = req.query.eventId ? parseInt(req.query.eventId as string) : undefined;
+      const recommendedPeople = await storage.getRecommendedPeople(req.session.user.id, eventId);
+      res.json(recommendedPeople);
+    } catch (error) {
+      res.status(500).json({ message: 'Server error' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

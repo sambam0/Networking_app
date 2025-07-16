@@ -31,6 +31,10 @@ export interface IStorage {
   createConnection(connection: InsertConnection): Promise<Connection>;
   getUserConnections(userId: number): Promise<UserProfile[]>;
   getEventConnections(eventId: number, userId: number): Promise<UserProfile[]>;
+  
+  // Recommendation operations
+  getRecommendedEvents(userId: number): Promise<EventWithHost[]>;
+  getRecommendedPeople(userId: number, eventId?: number): Promise<UserProfile[]>;
 }
 
 
@@ -336,6 +340,148 @@ export class DatabaseStorage implements IStorage {
       ));
 
     return eventConnections;
+  }
+
+  // Recommendation operations
+  async getRecommendedEvents(userId: number): Promise<EventWithHost[]> {
+    // Get user's profile to understand their interests
+    const user = await this.getUserById(userId);
+    if (!user || !user.interests || user.interests.length === 0) {
+      // If user has no interests, return upcoming events they haven't joined
+      const allEvents = await this.getAllEvents();
+      const userEvents = await this.getUserEvents(userId);
+      const userEventIds = new Set(userEvents.map(e => e.id));
+      
+      return allEvents
+        .filter(event => !userEventIds.has(event.id) && new Date(event.date) > new Date())
+        .slice(0, 5);
+    }
+
+    // Get all events the user hasn't joined
+    const allEvents = await this.getAllEvents();
+    const userEvents = await this.getUserEvents(userId);
+    const userEventIds = new Set(userEvents.map(e => e.id));
+    
+    // Score events based on:
+    // 1. Matching interests in description/name
+    // 2. Events attended by people with similar interests
+    // 3. Future events only
+    const scoredEvents = await Promise.all(
+      allEvents
+        .filter(event => !userEventIds.has(event.id) && new Date(event.date) > new Date())
+        .map(async (event) => {
+          let score = 0;
+          
+          // Check for interest matches in event name/description
+          user.interests.forEach(interest => {
+            const interestLower = interest.toLowerCase();
+            if (event.name.toLowerCase().includes(interestLower)) score += 3;
+            if (event.description?.toLowerCase().includes(interestLower)) score += 2;
+          });
+          
+          // Get attendees of this event
+          const attendees = await this.getEventAttendees(event.id);
+          
+          // Check for shared interests with attendees
+          attendees.forEach(attendee => {
+            if (attendee.interests) {
+              const sharedInterests = attendee.interests.filter(i => 
+                user.interests?.includes(i)
+              );
+              score += sharedInterests.length * 0.5;
+            }
+          });
+          
+          return { event, score };
+        })
+    );
+    
+    // Sort by score and return top recommendations
+    return scoredEvents
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 5)
+      .map(({ event }) => event);
+  }
+
+  async getRecommendedPeople(userId: number, eventId?: number): Promise<UserProfile[]> {
+    const user = await this.getUserById(userId);
+    if (!user) return [];
+    
+    let potentialConnections: UserProfile[] = [];
+    
+    if (eventId) {
+      // Get attendees of the specific event
+      potentialConnections = await this.getEventAttendees(eventId);
+    } else {
+      // Get all users from events the user is attending
+      const userEvents = await this.getUserEvents(userId);
+      const allAttendees = await Promise.all(
+        userEvents.map(event => this.getEventAttendees(event.id))
+      );
+      potentialConnections = allAttendees.flat();
+    }
+    
+    // Get existing connections
+    const existingConnections = await this.getUserConnections(userId);
+    const connectedIds = new Set(existingConnections.map(c => c.id));
+    
+    // Filter out self and already connected users
+    potentialConnections = potentialConnections.filter(
+      person => person.id !== userId && !connectedIds.has(person.id)
+    );
+    
+    // Remove duplicates
+    const uniqueUsers = Array.from(
+      new Map(potentialConnections.map(u => [u.id, u])).values()
+    );
+    
+    // Score users based on:
+    // 1. Shared interests
+    // 2. Similar background (school, age)
+    // 3. Complementary aspirations
+    const scoredUsers = uniqueUsers.map(person => {
+      let score = 0;
+      
+      // Shared interests (highest weight)
+      if (user.interests && person.interests) {
+        const sharedInterests = user.interests.filter(i => 
+          person.interests?.includes(i)
+        );
+        score += sharedInterests.length * 3;
+      }
+      
+      // Similar school
+      if (user.school && person.school && user.school === person.school) {
+        score += 2;
+      }
+      
+      // Similar age (within 5 years)
+      if (user.age && person.age && Math.abs(user.age - person.age) <= 5) {
+        score += 1;
+      }
+      
+      // Check for complementary aspirations/background
+      if (user.aspirations && person.background) {
+        const userAspirationsLower = user.aspirations.toLowerCase();
+        const personBackgroundLower = person.background.toLowerCase();
+        
+        // Simple keyword matching for complementary skills
+        const keywords = ['design', 'tech', 'startup', 'business', 'engineering', 'product'];
+        keywords.forEach(keyword => {
+          if (userAspirationsLower.includes(keyword) && personBackgroundLower.includes(keyword)) {
+            score += 1;
+          }
+        });
+      }
+      
+      return { person, score };
+    });
+    
+    // Sort by score and return top recommendations
+    return scoredUsers
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 10)
+      .map(({ person }) => person);
   }
 }
 

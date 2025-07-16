@@ -122,7 +122,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: 'Forbidden' });
       }
 
+      console.log('Raw req.body:', req.body);
       const updates = { ...req.body };
+      console.log('Initial updates object:', updates);
       
       // Handle file upload
       if (req.file) {

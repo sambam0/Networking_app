@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
 import Navbar from "@/components/layout/navbar";
 import { Calendar, Users, Plus, Clock, MapPin, QrCode } from "lucide-react";
 import { useAuth } from "@/lib/auth";
@@ -103,6 +103,9 @@ export default function Dashboard() {
                   <QrCode className="h-5 w-5" />
                   <span>Join Event</span>
                 </DialogTitle>
+                <DialogDescription>
+                  Enter the event code provided by the host to join the event.
+                </DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
                 <div>

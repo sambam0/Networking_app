@@ -1,7 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download, Share2 } from "lucide-react";
+import { Download, Share2, Copy } from "lucide-react";
 import { generateQRCodeDataURL, downloadQRCode } from "@/lib/qr-utils";
+import { useToast } from "@/hooks/use-toast";
 import { type Event } from "@shared/schema";
 
 interface QRCodeProps {
@@ -10,6 +11,7 @@ interface QRCodeProps {
 
 export default function QRCode({ event }: QRCodeProps) {
   const qrCodeDataURL = generateQRCodeDataURL(event.qrCode);
+  const { toast } = useToast();
 
   const handleDownload = () => {
     downloadQRCode(event.qrCode, `${event.name}-qr-code.png`);
@@ -27,7 +29,19 @@ export default function QRCode({ event }: QRCodeProps) {
     } else {
       // Fallback: copy to clipboard
       await navigator.clipboard.writeText(shareUrl);
+      toast({
+        title: "Link Copied!",
+        description: "Event link has been copied to clipboard.",
+      });
     }
+  };
+
+  const handleCopyCode = async () => {
+    await navigator.clipboard.writeText(event.qrCode);
+    toast({
+      title: "Event Code Copied!",
+      description: "Event code has been copied to clipboard.",
+    });
   };
 
   return (
@@ -46,6 +60,20 @@ export default function QRCode({ event }: QRCodeProps) {
           <p className="text-gray-600 text-sm">
             {new Date(event.date).toLocaleDateString()} • {new Date(event.date).toLocaleTimeString()}
           </p>
+          <div className="mt-4 p-3 bg-gray-100 rounded-lg">
+            <p className="text-xs text-gray-600 mb-1">Event Code:</p>
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-lg font-mono font-bold text-gray-800 tracking-wider">{event.qrCode}</p>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={handleCopyCode}
+                className="text-gray-600 hover:text-gray-800"
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
         </div>
         
         <div className="flex gap-3">

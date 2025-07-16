@@ -246,7 +246,7 @@ export default function EventDetail() {
 
           {/* QR Code and Host Info */}
           <div className="space-y-6">
-            {isHost && <QRCode event={event} />}
+            <QRCode event={event} />
             
             {event.host && (
               <Card>

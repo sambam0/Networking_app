@@ -137,10 +137,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Parse social links if provided
       if (updates.socialLinks && typeof updates.socialLinks === 'string') {
-        updates.socialLinks = JSON.parse(updates.socialLinks);
+        try {
+          updates.socialLinks = JSON.parse(updates.socialLinks);
+        } catch (e) {
+          // If parsing fails, remove the field
+          delete updates.socialLinks;
+        }
       }
 
-      const user = await storage.updateUser(id, updates);
+      // Remove undefined and null values, keep empty strings
+      const cleanedUpdates = Object.keys(updates).reduce((acc, key) => {
+        if (updates[key] !== undefined && updates[key] !== null) {
+          acc[key] = updates[key];
+        }
+        return acc;
+      }, {} as any);
+
+      // Check if we have any updates to make
+      if (Object.keys(cleanedUpdates).length === 0) {
+        return res.status(400).json({ message: 'No values to set' });
+      }
+
+      console.log('Updates to apply:', cleanedUpdates); // Debug log
+      const user = await storage.updateUser(id, cleanedUpdates);
       res.json(user);
     } catch (error) {
       res.status(400).json({ message: error instanceof Error ? error.message : 'Update failed' });

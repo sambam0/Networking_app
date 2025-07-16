@@ -23,9 +23,9 @@ const profileUpdateSchema = z.object({
   background: z.string().optional(),
   aspirations: z.string().optional(),
   socialLinks: z.object({
-    linkedin: z.string().url().optional().or(z.literal("")),
-    website: z.string().url().optional().or(z.literal("")),
-    twitter: z.string().url().optional().or(z.literal("")),
+    linkedin: z.string().optional().refine(val => !val || z.string().url().safeParse(val).success, "Invalid LinkedIn URL"),
+    website: z.string().optional().refine(val => !val || z.string().url().safeParse(val).success, "Invalid website URL"),
+    twitter: z.string().optional().refine(val => !val || z.string().url().safeParse(val).success, "Invalid Twitter URL"),
   }).optional(),
 });
 
@@ -58,14 +58,17 @@ export default function Profile() {
     mutationFn: async (data: any) => {
       const formData = new FormData();
       
-      // Append all form fields
-      Object.keys(data).forEach(key => {
-        if (key === 'socialLinks') {
-          formData.append(key, JSON.stringify(data[key]));
-        } else {
-          formData.append(key, data[key]);
-        }
-      });
+      // Append all form fields, ensuring we include all values
+      formData.append('fullName', data.fullName || '');
+      formData.append('age', String(data.age || 18));
+      formData.append('school', data.school || '');
+      formData.append('background', data.background || '');
+      formData.append('aspirations', data.aspirations || '');
+      
+      // Handle social links properly
+      if (data.socialLinks) {
+        formData.append('socialLinks', JSON.stringify(data.socialLinks));
+      }
       
       // Append interests
       formData.append('interests', JSON.stringify(interests));

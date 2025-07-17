@@ -181,13 +181,34 @@ export default function Profile() {
                   {form.watch('fullName') || user.fullName}
                 </h3>
                 
-                <p className="text-muted-foreground mb-1">
+                <p className="text-muted-foreground mb-2">
                   {form.watch('age') || user.age} years old
                 </p>
                 
-                {(form.watch('school') || user.school) && (
+                {/* Location Information */}
+                {((form.watch('hometown') || user.hometown) || (form.watch('state') || user.state)) && (
+                  <p className="text-sm text-muted-foreground mb-2">
+                    📍 {(form.watch('hometown') || user.hometown)}{((form.watch('hometown') || user.hometown) && (form.watch('state') || user.state)) ? ', ' : ''}{(form.watch('state') || user.state)}
+                  </p>
+                )}
+                
+                {/* Education Information */}
+                {(form.watch('college') || user.college) && (
+                  <p className="text-primary font-medium mb-1">
+                    🎓 {form.watch('college') || user.college}
+                  </p>
+                )}
+                
+                {(form.watch('highSchool') || user.highSchool) && (
+                  <p className="text-sm text-muted-foreground mb-2">
+                    🏫 {form.watch('highSchool') || user.highSchool}
+                  </p>
+                )}
+                
+                {/* Legacy school field for backward compatibility */}
+                {(form.watch('school') || user.school) && !(form.watch('college') || user.college) && !(form.watch('highSchool') || user.highSchool) && (
                   <p className="text-primary font-medium mb-4">
-                    {form.watch('school') || user.school}
+                    🎓 {form.watch('school') || user.school}
                   </p>
                 )}
                 

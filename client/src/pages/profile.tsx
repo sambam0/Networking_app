@@ -8,13 +8,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth";
 import { apiRequest } from "@/lib/queryClient";
 import Navbar from "@/components/layout/navbar";
-import { Upload, X, Plus, User, Save, Link, ExternalLink, Copy, Linkedin, Twitter, Instagram, Github, Video, Facebook, Globe } from "lucide-react";
+import { Upload, X, Plus, User, Save, Link, ExternalLink, Copy, Linkedin, Twitter, Instagram, Github, Video, Facebook, Globe, ChevronDown } from "lucide-react";
 
 const profileUpdateSchema = z.object({
   fullName: z.string().min(1, "Full name is required"),
@@ -111,6 +112,7 @@ const socialPlatforms = [
 export default function Profile() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [selectedPlatform, setSelectedPlatform] = useState<string>('');
   const queryClient = useQueryClient();
   const [interests, setInterests] = useState<string[]>(user?.interests || []);
   const [newInterest, setNewInterest] = useState("");
@@ -530,92 +532,190 @@ export default function Profile() {
                           </p>
                         </CardHeader>
                         <CardContent className="space-y-6">
-                          <div className="grid gap-4">
-                            {socialPlatforms.map((platform) => {
-                              const Icon = platform.icon;
-                              const currentValue = form.watch(`socialLinks.${platform.key}`);
-                              
-                              return (
-                                <div key={platform.key} className="space-y-2">
-                                  <FormField
-                                    control={form.control}
-                                    name={`socialLinks.${platform.key}`}
-                                    render={({ field }) => (
-                                      <FormItem>
-                                        <FormLabel className="flex items-center gap-2">
+                          {/* Platform Selection Dropdown */}
+                          <div className="space-y-4">
+                            <div className="flex items-center gap-4">
+                              <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
+                                <SelectTrigger className="w-[200px]">
+                                  <SelectValue placeholder="Choose a platform" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {socialPlatforms.map((platform) => {
+                                    const Icon = platform.icon;
+                                    return (
+                                      <SelectItem key={platform.key} value={platform.key}>
+                                        <div className="flex items-center gap-2">
                                           <Icon className={`w-4 h-4 ${platform.color}`} />
                                           {platform.name}
-                                        </FormLabel>
-                                        <div className="flex gap-2">
-                                          <FormControl>
-                                            <Input
-                                              placeholder={platform.placeholder}
-                                              {...field}
-                                              className="flex-1"
-                                            />
-                                          </FormControl>
-                                          {currentValue && (
-                                            <div className="flex gap-1">
-                                              <Button
-                                                type="button"
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={async () => {
-                                                  try {
-                                                    await navigator.clipboard.writeText(currentValue);
-                                                  } catch (err) {
-                                                    console.error('Failed to copy:', err);
-                                                  }
-                                                }}
-                                                className="px-3"
-                                              >
-                                                <Copy className="w-4 h-4" />
-                                              </Button>
-                                              <Button
-                                                type="button"
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => window.open(currentValue, '_blank')}
-                                                className="px-3"
-                                              >
-                                                <ExternalLink className="w-4 h-4" />
-                                              </Button>
-                                            </div>
-                                          )}
                                         </div>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-                                  
-                                  {platform.key !== 'website' && (
-                                    <div className="flex items-center gap-2 ml-6">
-                                      <span className="text-xs text-muted-foreground">Quick setup:</span>
-                                      <div className="flex items-center gap-1">
-                                        <span className="text-xs text-muted-foreground">{platform.baseUrl}</span>
-                                        <Input
-                                          placeholder="username"
-                                          className="h-6 text-xs w-24"
-                                          onKeyDown={(e) => {
-                                            if (e.key === 'Enter') {
-                                              e.preventDefault();
-                                              const username = e.currentTarget.value.trim();
-                                              if (username) {
-                                                const fullUrl = platform.baseUrl + username;
-                                                form.setValue(`socialLinks.${platform.key}`, fullUrl);
-                                                e.currentTarget.value = '';
-                                              }
-                                            }
-                                          }}
-                                        />
-                                        <span className="text-xs text-muted-foreground">→ Press Enter</span>
-                                      </div>
+                                      </SelectItem>
+                                    );
+                                  })}
+                                </SelectContent>
+                              </Select>
+                              
+                              {selectedPlatform && (
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => setSelectedPlatform('')}
+                                >
+                                  Clear
+                                </Button>
+                              )}
+                            </div>
+
+                            {/* Current Social Links Display */}
+                            <div className="space-y-2">
+                              {socialPlatforms.map((platform) => {
+                                const currentValue = form.watch(`socialLinks.${platform.key}`);
+                                if (!currentValue) return null;
+                                
+                                const Icon = platform.icon;
+                                return (
+                                  <div key={platform.key} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                                    <div className="flex items-center gap-2">
+                                      <Icon className={`w-4 h-4 ${platform.color}`} />
+                                      <span className="font-medium">{platform.name}</span>
+                                      <span className="text-sm text-muted-foreground truncate max-w-[200px]">
+                                        {currentValue}
+                                      </span>
                                     </div>
-                                  )}
-                                </div>
-                              );
-                            })}
+                                    <div className="flex gap-1">
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={async () => {
+                                          try {
+                                            await navigator.clipboard.writeText(currentValue);
+                                            toast({ title: "Copied to clipboard!" });
+                                          } catch (err) {
+                                            console.error('Failed to copy:', err);
+                                          }
+                                        }}
+                                        className="px-2"
+                                      >
+                                        <Copy className="w-3 h-3" />
+                                      </Button>
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => window.open(currentValue, '_blank')}
+                                        className="px-2"
+                                      >
+                                        <ExternalLink className="w-3 h-3" />
+                                      </Button>
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => form.setValue(`socialLinks.${platform.key}`, '')}
+                                        className="px-2 text-destructive hover:text-destructive"
+                                      >
+                                        <X className="w-3 h-3" />
+                                      </Button>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
                           </div>
+
+                          {/* Selected Platform Form */}
+                          {selectedPlatform && (() => {
+                            const platform = socialPlatforms.find(p => p.key === selectedPlatform);
+                            if (!platform) return null;
+                            
+                            const Icon = platform.icon;
+                            const currentValue = form.watch(`socialLinks.${platform.key}`);
+                            
+                            return (
+                              <div className="space-y-4 p-4 border rounded-lg bg-muted/50">
+                                <div className="flex items-center gap-2">
+                                  <Icon className={`w-5 h-5 ${platform.color}`} />
+                                  <h4 className="font-medium">Add {platform.name} Profile</h4>
+                                </div>
+                                
+                                <FormField
+                                  control={form.control}
+                                  name={`socialLinks.${platform.key}`}
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Profile URL</FormLabel>
+                                      <div className="flex gap-2">
+                                        <FormControl>
+                                          <Input
+                                            placeholder={platform.placeholder}
+                                            {...field}
+                                            className="flex-1"
+                                          />
+                                        </FormControl>
+                                        {currentValue && (
+                                          <div className="flex gap-1">
+                                            <Button
+                                              type="button"
+                                              variant="outline"
+                                              size="sm"
+                                              onClick={async () => {
+                                                try {
+                                                  await navigator.clipboard.writeText(currentValue);
+                                                  toast({ title: "Copied to clipboard!" });
+                                                } catch (err) {
+                                                  console.error('Failed to copy:', err);
+                                                }
+                                              }}
+                                              className="px-3"
+                                            >
+                                              <Copy className="w-4 h-4" />
+                                            </Button>
+                                            <Button
+                                              type="button"
+                                              variant="outline"
+                                              size="sm"
+                                              onClick={() => window.open(currentValue, '_blank')}
+                                              className="px-3"
+                                            >
+                                              <ExternalLink className="w-4 h-4" />
+                                            </Button>
+                                          </div>
+                                        )}
+                                      </div>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                                
+                                {platform.key !== 'website' && (
+                                  <div className="bg-background/50 p-3 rounded border">
+                                    <p className="text-sm font-medium mb-2">Quick Setup</p>
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-sm text-muted-foreground">{platform.baseUrl}</span>
+                                      <Input
+                                        placeholder="username"
+                                        className="h-8 text-sm w-32"
+                                        onKeyDown={(e) => {
+                                          if (e.key === 'Enter') {
+                                            e.preventDefault();
+                                            const username = e.currentTarget.value.trim();
+                                            if (username) {
+                                              const fullUrl = platform.baseUrl + username;
+                                              form.setValue(`socialLinks.${platform.key}`, fullUrl);
+                                              e.currentTarget.value = '';
+                                              toast({ title: `${platform.name} profile added!` });
+                                            }
+                                          }
+                                        }}
+                                      />
+                                      <span className="text-sm text-muted-foreground">Press Enter</span>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })()}
                           
                           <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
                             <div className="flex items-start gap-2">

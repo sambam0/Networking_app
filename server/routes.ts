@@ -88,8 +88,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         email,
         password,
         username: tempUsername,
-        fullName: '',
+        fullName: '', // Will be filled in during profile completion
         confirmPassword: password,
+        authProvider: 'email',
+        // Add default empty values for other fields
+        age: null,
+        hometown: null,
+        state: null,
+        college: null,
+        highSchool: null,
+        school: null,
+        background: null,
+        aspirations: null,
+        interests: [],
+        socialLinks: {},
       });
       
       req.session.user = { id: user.id, email: user.email, username: user.username };
@@ -217,6 +229,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Check if this is a new user who needs to complete their profile
         // Google users created with incomplete profile should go to completion
+        console.log('Google OAuth user:', { 
+          username: user.username, 
+          fullName: user.fullName, 
+          shouldComplete: user.username.includes('user_') || !user.fullName || user.fullName === '' 
+        });
+        
         if (user.username.includes('user_') || !user.fullName || user.fullName === '') {
           res.redirect('/signup/complete');
         } else {

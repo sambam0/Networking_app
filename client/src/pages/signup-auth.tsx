@@ -69,7 +69,9 @@ export default function SignupAuth() {
             <GoogleButton 
               variant="signup"
               className="w-full"
-            />
+            >
+              Sign up with Google
+            </GoogleButton>
             
             {/* Divider */}
             <div className="relative">

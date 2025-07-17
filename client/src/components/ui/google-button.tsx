@@ -2,12 +2,15 @@ import { Button } from "@/components/ui/button";
 import { FcGoogle } from "react-icons/fc";
 
 interface GoogleButtonProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
+  variant?: "login" | "signup";
   onClick?: () => void;
   disabled?: boolean;
+  className?: string;
 }
 
-export function GoogleButton({ children, onClick, disabled = false }: GoogleButtonProps) {
+export function GoogleButton({ children, variant = "login", onClick, disabled = false, className = "" }: GoogleButtonProps) {
+  const defaultText = variant === "signup" ? "Sign up with Google" : "Sign in with Google";
   const handleClick = async () => {
     if (onClick) {
       onClick();
@@ -30,12 +33,12 @@ export function GoogleButton({ children, onClick, disabled = false }: GoogleButt
     <Button 
       type="button"
       variant="outline"
-      className="w-full py-4 text-lg border-2 hover:bg-gray-50 dark:hover:bg-gray-900"
+      className={`w-full py-4 text-lg border-2 hover:bg-gray-50 dark:hover:bg-gray-900 ${className}`}
       onClick={handleClick}
       disabled={disabled}
     >
       <FcGoogle className="h-5 w-5 mr-3" />
-      {children}
+      {children || defaultText}
     </Button>
   );
 }

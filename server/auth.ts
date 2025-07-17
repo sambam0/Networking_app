@@ -41,6 +41,17 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
         username: `user_${profile.id}`, // Temporary username, they'll choose their own
         authProvider: 'google',
         profilePhoto: profile.photos?.[0]?.value,
+        // Add default empty values for required fields
+        age: null,
+        hometown: null,
+        state: null,
+        college: null,
+        highSchool: null,
+        school: null,
+        background: null,
+        aspirations: null,
+        interests: [],
+        socialLinks: {}
       });
 
       return done(null, newUser);

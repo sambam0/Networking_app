@@ -104,7 +104,7 @@ export default function Login() {
                 </div>
               </div>
               
-              <GoogleButton>
+              <GoogleButton variant="login">
                 Sign in with Google
               </GoogleButton>
               

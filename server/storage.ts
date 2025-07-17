@@ -1,4 +1,4 @@
-import { users, events, eventAttendees, connections, type User, type InsertUser, type GoogleUser, type Event, type InsertEvent, type EventAttendee, type InsertEventAttendee, type Connection, type InsertConnection, type EventWithHost, type EventWithAttendees, type UserProfile } from "@shared/schema";
+import { users, events, eventAttendees, connections, adminPrivileges, type User, type InsertUser, type GoogleUser, type Event, type InsertEvent, type EventAttendee, type InsertEventAttendee, type Connection, type InsertConnection, type EventWithHost, type EventWithAttendees, type UserProfile } from "@shared/schema";
 import { nanoid } from "nanoid";
 import { db } from "./db";
 import { eq, and, sql } from "drizzle-orm";
@@ -42,6 +42,11 @@ export interface IStorage {
   getAllUsers(): Promise<User[]>;
   getAllEventsWithDetails(): Promise<EventWithAttendees[]>;
   getAllConnections(): Promise<any[]>;
+  getAdminUsers(): Promise<any[]>;
+  grantAdminPrivileges(email: string, adminLevel: string, grantedBy: number): Promise<any>;
+  revokeAdminPrivileges(userId: number): Promise<boolean>;
+  updateAdminLevel(userId: number, adminLevel: string): Promise<any>;
+  checkAdminPrivileges(userId: number): Promise<{ isAdmin: boolean; adminLevel: string; isSystemAdmin: boolean }>;
 }
 
 
@@ -688,6 +693,140 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(events, eq(connections.eventId, events.id));
 
     return allConnections;
+  }
+
+  // Admin privilege operations
+  async getAdminUsers(): Promise<any[]> {
+    const adminUsers = await db
+      .select({
+        id: users.id,
+        username: users.username,
+        email: users.email,
+        fullName: users.fullName,
+        adminLevel: adminPrivileges.adminLevel,
+        isSystemAdmin: adminPrivileges.isSystemAdmin,
+        grantedBy: adminPrivileges.grantedBy,
+        grantedAt: adminPrivileges.grantedAt,
+        grantedByUser: {
+          id: sql`grantor.id`,
+          username: sql`grantor.username`,
+          fullName: sql`grantor.full_name`,
+        },
+      })
+      .from(adminPrivileges)
+      .innerJoin(users, eq(adminPrivileges.userId, users.id))
+      .leftJoin(sql`${users} grantor`, sql`${adminPrivileges.grantedBy} = grantor.id`);
+
+    // Add legacy admin check for existing system admins
+    const legacyAdmins = await db
+      .select()
+      .from(users)
+      .where(sql`${users.email} = 'admin@realconnect.ing' OR ${users.id} = 1`);
+
+    const legacyAdminData = legacyAdmins
+      .filter(user => !adminUsers.find(admin => admin.id === user.id))
+      .map(user => ({
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        fullName: user.fullName,
+        adminLevel: 'super',
+        isSystemAdmin: true,
+        grantedBy: null,
+        grantedAt: user.createdAt,
+        grantedByUser: null,
+      }));
+
+    return [...adminUsers, ...legacyAdminData];
+  }
+
+  async grantAdminPrivileges(email: string, adminLevel: string, grantedBy: number): Promise<any> {
+    const user = await this.getUserByEmail(email);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    // Check if user already has admin privileges
+    const existingPrivileges = await db
+      .select()
+      .from(adminPrivileges)
+      .where(eq(adminPrivileges.userId, user.id));
+
+    if (existingPrivileges.length > 0) {
+      throw new Error('User already has admin privileges');
+    }
+
+    const [newAdmin] = await db
+      .insert(adminPrivileges)
+      .values({
+        userId: user.id,
+        adminLevel: adminLevel as 'super' | 'standard' | 'readonly',
+        grantedBy,
+        isSystemAdmin: false,
+      })
+      .returning();
+
+    return newAdmin;
+  }
+
+  async revokeAdminPrivileges(userId: number): Promise<boolean> {
+    const result = await db
+      .delete(adminPrivileges)
+      .where(and(
+        eq(adminPrivileges.userId, userId),
+        eq(adminPrivileges.isSystemAdmin, false)
+      ));
+
+    return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  async updateAdminLevel(userId: number, adminLevel: string): Promise<any> {
+    const [updatedAdmin] = await db
+      .update(adminPrivileges)
+      .set({ adminLevel: adminLevel as 'super' | 'standard' | 'readonly' })
+      .where(and(
+        eq(adminPrivileges.userId, userId),
+        eq(adminPrivileges.isSystemAdmin, false)
+      ))
+      .returning();
+
+    if (!updatedAdmin) {
+      throw new Error('Admin not found or cannot update system admin');
+    }
+
+    return updatedAdmin;
+  }
+
+  async checkAdminPrivileges(userId: number): Promise<{ isAdmin: boolean; adminLevel: string; isSystemAdmin: boolean }> {
+    // Check legacy admin status first
+    const user = await this.getUserById(userId);
+    if (user?.email === 'admin@realconnect.ing' || userId === 1) {
+      return {
+        isAdmin: true,
+        adminLevel: 'super',
+        isSystemAdmin: true,
+      };
+    }
+
+    // Check admin privileges table
+    const [adminPrivs] = await db
+      .select()
+      .from(adminPrivileges)
+      .where(eq(adminPrivileges.userId, userId));
+
+    if (!adminPrivs) {
+      return {
+        isAdmin: false,
+        adminLevel: 'none',
+        isSystemAdmin: false,
+      };
+    }
+
+    return {
+      isAdmin: true,
+      adminLevel: adminPrivs.adminLevel,
+      isSystemAdmin: adminPrivs.isSystemAdmin,
+    };
   }
 }
 

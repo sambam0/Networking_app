@@ -591,13 +591,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(401).json({ message: 'Authentication required' });
     }
     
-    // Check if user is admin (modify this logic as needed)
-    const user = await storage.getUserById(req.session.user.id);
-    const isAdmin = user?.email === 'admin@realconnect.ing' || user?.id === 1;
+    // Check admin privileges using new system
+    const adminCheck = await storage.checkAdminPrivileges(req.session.user.id);
     
-    if (!isAdmin) {
+    if (!adminCheck.isAdmin) {
       return res.status(403).json({ message: 'Admin access required' });
     }
+    
+    // Attach admin info to request for use in routes
+    req.adminLevel = adminCheck.adminLevel;
+    req.isSystemAdmin = adminCheck.isSystemAdmin;
+    
+    next();
+  };
+
+  // Require super admin for sensitive operations
+  const requireSuperAdmin = async (req: any, res: any, next: any) => {
+    if (!req.session?.user) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
+    
+    const adminCheck = await storage.checkAdminPrivileges(req.session.user.id);
+    
+    if (!adminCheck.isAdmin || (adminCheck.adminLevel !== 'super' && !adminCheck.isSystemAdmin)) {
+      return res.status(403).json({ message: 'Super admin access required' });
+    }
+    
+    req.adminLevel = adminCheck.adminLevel;
+    req.isSystemAdmin = adminCheck.isSystemAdmin;
     
     next();
   };
@@ -657,6 +678,96 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(stats);
     } catch (error) {
       console.error('Error fetching admin stats:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
+  });
+
+  // Admin management routes
+  app.get('/api/admin/admins', requireSuperAdmin, async (req, res) => {
+    try {
+      const adminUsers = await storage.getAdminUsers();
+      res.json(adminUsers);
+    } catch (error) {
+      console.error('Error fetching admin users:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
+  });
+
+  app.post('/api/admin/admins', requireSuperAdmin, async (req, res) => {
+    try {
+      const { email, adminLevel } = req.body;
+      
+      if (!email || !adminLevel) {
+        return res.status(400).json({ message: 'Email and admin level are required' });
+      }
+
+      if (!['super', 'standard', 'readonly'].includes(adminLevel)) {
+        return res.status(400).json({ message: 'Invalid admin level' });
+      }
+
+      const newAdmin = await storage.grantAdminPrivileges(email, adminLevel, req.session.user.id);
+      res.json(newAdmin);
+    } catch (error) {
+      console.error('Error granting admin privileges:', error);
+      res.status(400).json({ message: error instanceof Error ? error.message : 'Failed to grant admin privileges' });
+    }
+  });
+
+  app.delete('/api/admin/admins/:userId', requireSuperAdmin, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      
+      if (userId === req.session.user.id) {
+        return res.status(400).json({ message: 'Cannot revoke your own admin privileges' });
+      }
+
+      const success = await storage.revokeAdminPrivileges(userId);
+      
+      if (!success) {
+        return res.status(404).json({ message: 'Admin not found or cannot revoke system admin' });
+      }
+
+      res.json({ message: 'Admin privileges revoked successfully' });
+    } catch (error) {
+      console.error('Error revoking admin privileges:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
+  });
+
+  app.patch('/api/admin/admins/:userId', requireSuperAdmin, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const { adminLevel } = req.body;
+      
+      if (!adminLevel || !['super', 'standard', 'readonly'].includes(adminLevel)) {
+        return res.status(400).json({ message: 'Valid admin level is required' });
+      }
+
+      const updatedAdmin = await storage.updateAdminLevel(userId, adminLevel);
+      res.json(updatedAdmin);
+    } catch (error) {
+      console.error('Error updating admin level:', error);
+      res.status(400).json({ message: error instanceof Error ? error.message : 'Failed to update admin level' });
+    }
+  });
+
+  app.get('/api/admin/settings', requireAdmin, async (req, res) => {
+    try {
+      const adminCheck = await storage.checkAdminPrivileges(req.session.user.id);
+      res.json({
+        currentUser: {
+          id: req.session.user.id,
+          adminLevel: adminCheck.adminLevel,
+          isSystemAdmin: adminCheck.isSystemAdmin,
+        },
+        permissions: {
+          canManageAdmins: adminCheck.adminLevel === 'super' || adminCheck.isSystemAdmin,
+          canViewData: true,
+          canModifyData: adminCheck.adminLevel !== 'readonly',
+        }
+      });
+    } catch (error) {
+      console.error('Error fetching admin settings:', error);
       res.status(500).json({ message: 'Server error' });
     }
   });

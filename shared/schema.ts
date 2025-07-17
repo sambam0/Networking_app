@@ -68,6 +68,15 @@ export const eventAttendees = pgTable("event_attendees", {
   joinedAt: timestamp("joined_at").defaultNow().notNull(),
 });
 
+export const adminPrivileges = pgTable("admin_privileges", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull().unique(),
+  adminLevel: text("admin_level", { enum: ['super', 'standard', 'readonly'] }).notNull().default('readonly'),
+  isSystemAdmin: boolean("is_system_admin").default(false).notNull(),
+  grantedBy: integer("granted_by").references(() => users.id),
+  grantedAt: timestamp("granted_at").defaultNow().notNull(),
+});
+
 export const connections = pgTable("connections", {
   id: serial("id").primaryKey(),
   fromUserId: integer("from_user_id").references(() => users.id).notNull(),
@@ -77,11 +86,12 @@ export const connections = pgTable("connections", {
 });
 
 // Relations
-export const usersRelations = relations(users, ({ many }) => ({
+export const usersRelations = relations(users, ({ many, one }) => ({
   hostedEvents: many(events),
   eventAttendees: many(eventAttendees),
   connectionsFrom: many(connections, { relationName: "fromUser" }),
   connectionsTo: many(connections, { relationName: "toUser" }),
+  adminPrivileges: one(adminPrivileges),
 }));
 
 export const eventsRelations = relations(events, ({ one, many }) => ({
@@ -118,6 +128,17 @@ export const connectionsRelations = relations(connections, ({ one }) => ({
   event: one(events, {
     fields: [connections.eventId],
     references: [events.id],
+  }),
+}));
+
+export const adminPrivilegesRelations = relations(adminPrivileges, ({ one }) => ({
+  user: one(users, {
+    fields: [adminPrivileges.userId],
+    references: [users.id],
+  }),
+  grantedByUser: one(users, {
+    fields: [adminPrivileges.grantedBy],
+    references: [users.id],
   }),
 }));
 

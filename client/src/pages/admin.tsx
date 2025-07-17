@@ -26,6 +26,7 @@ import {
 import { useAuth } from "@/lib/auth";
 import { type User, type Event } from "@shared/schema";
 import { useState } from "react";
+import { AdminSettings } from "@/components/admin/admin-settings";
 
 export default function AdminPage() {
   const { user } = useAuth();
@@ -206,9 +207,9 @@ export default function AdminPage() {
               <Activity className="h-4 w-4" />
               Connections ({connections?.length || 0})
             </TabsTrigger>
-            <TabsTrigger value="system" className="flex items-center gap-2">
-              <Database className="h-4 w-4" />
-              System
+            <TabsTrigger value="settings" className="flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              Admin Settings
             </TabsTrigger>
           </TabsList>
 
@@ -623,58 +624,8 @@ export default function AdminPage() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="system" className="mt-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>System Information</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <label className="text-sm font-medium">Environment</label>
-                    <p className="text-sm text-muted-foreground">Development</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">Database</label>
-                    <p className="text-sm text-muted-foreground">PostgreSQL (Neon)</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">Authentication</label>
-                    <p className="text-sm text-muted-foreground">Session-based + Google OAuth</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">Domain</label>
-                    <p className="text-sm text-muted-foreground">realconnect.ing</p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Recent Activity</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-2 text-sm">
-                      <div className="h-2 w-2 bg-green-500 rounded-full"></div>
-                      <span>Calendar sync feature implemented</span>
-                    </div>
-                    <div className="flex items-center space-x-2 text-sm">
-                      <div className="h-2 w-2 bg-blue-500 rounded-full"></div>
-                      <span>Google OAuth authentication active</span>
-                    </div>
-                    <div className="flex items-center space-x-2 text-sm">
-                      <div className="h-2 w-2 bg-purple-500 rounded-full"></div>
-                      <span>Social media integration active</span>
-                    </div>
-                    <div className="flex items-center space-x-2 text-sm">
-                      <div className="h-2 w-2 bg-orange-500 rounded-full"></div>
-                      <span>Advanced recommendations engine active</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+          <TabsContent value="settings" className="mt-6">
+            <AdminSettings />
           </TabsContent>
         </Tabs>
       </div>

@@ -14,7 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth";
 import { apiRequest } from "@/lib/queryClient";
 import Navbar from "@/components/layout/navbar";
-import { Upload, X, Plus, User, Save, Link, ExternalLink, Copy, Check, Linkedin, Twitter, Instagram, Github, Video, Facebook, Globe } from "lucide-react";
+import { Upload, X, Plus, User, Save, Link, ExternalLink, Copy, Linkedin, Twitter, Instagram, Github, Video, Facebook, Globe } from "lucide-react";
 
 const profileUpdateSchema = z.object({
   fullName: z.string().min(1, "Full name is required"),
@@ -106,138 +106,7 @@ const socialPlatforms = [
   },
 ] as const;
 
-// Social Media Integration Component
-function SocialMediaIntegration({ form }: { form: any }) {
-  const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
 
-  const copyToClipboard = async (url: string) => {
-    try {
-      await navigator.clipboard.writeText(url);
-      setCopiedUrl(url);
-      setTimeout(() => setCopiedUrl(null), 2000);
-    } catch (err) {
-      console.error('Failed to copy:', err);
-    }
-  };
-
-  const handleQuickSetup = (platform: typeof socialPlatforms[0], username: string) => {
-    if (username.trim()) {
-      const fullUrl = platform.baseUrl + username.trim();
-      form.setValue(`socialLinks.${platform.key}`, fullUrl);
-    }
-  };
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Link className="w-5 h-5" />
-          Social Media Integration
-        </CardTitle>
-        <p className="text-sm text-muted-foreground">
-          Connect your social profiles for easy networking and professional connections
-        </p>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="grid gap-4">
-          {socialPlatforms.map((platform) => {
-            const Icon = platform.icon;
-            const currentValue = form.watch(`socialLinks.${platform.key}`);
-            
-            return (
-              <div key={platform.key} className="space-y-2">
-                <FormField
-                  control={form.control}
-                  name={`socialLinks.${platform.key}`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="flex items-center gap-2">
-                        <Icon className={`w-4 h-4 ${platform.color}`} />
-                        {platform.name}
-                      </FormLabel>
-                      <div className="flex gap-2">
-                        <FormControl>
-                          <Input
-                            placeholder={platform.placeholder}
-                            {...field}
-                            className="flex-1"
-                          />
-                        </FormControl>
-                        {currentValue && (
-                          <div className="flex gap-1">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => copyToClipboard(currentValue)}
-                              className="px-3"
-                            >
-                              {copiedUrl === currentValue ? (
-                                <Check className="w-4 h-4 text-green-500" />
-                              ) : (
-                                <Copy className="w-4 h-4" />
-                              )}
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => window.open(currentValue, '_blank')}
-                              className="px-3"
-                            >
-                              <ExternalLink className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                {platform.key !== 'website' && (
-                  <div className="flex items-center gap-2 ml-6">
-                    <span className="text-xs text-muted-foreground">Quick setup:</span>
-                    <div className="flex items-center gap-1">
-                      <span className="text-xs text-muted-foreground">{platform.baseUrl}</span>
-                      <Input
-                        placeholder="username"
-                        className="h-6 text-xs w-24"
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            handleQuickSetup(platform, e.currentTarget.value);
-                            e.currentTarget.value = '';
-                          }
-                        }}
-                      />
-                      <span className="text-xs text-muted-foreground">→ Press Enter</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-        
-        <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
-          <div className="flex items-start gap-2">
-            <div className="w-2 h-2 bg-primary rounded-full mt-2"></div>
-            <div>
-              <p className="font-medium text-sm">Pro Tips for Social Integration:</p>
-              <ul className="text-xs text-muted-foreground space-y-1 mt-1">
-                <li>• Use your complete profile URLs for better professional presentation</li>
-                <li>• LinkedIn connections are highly valued in professional networking</li>
-                <li>• GitHub profiles showcase your technical skills to other attendees</li>
-                <li>• Copy links to share with new connections quickly</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
 
 export default function Profile() {
   const { user } = useAuth();
@@ -645,9 +514,125 @@ export default function Profile() {
                             </div>
                           </div>
                         </div>
-                        
-
                       </div>
+                    </div>
+                    
+                    {/* Social Media Integration Section */}
+                    <div className="col-span-full">
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="flex items-center gap-2">
+                            <Link className="w-5 h-5" />
+                            Social Media Integration
+                          </CardTitle>
+                          <p className="text-sm text-muted-foreground">
+                            Connect your social profiles for easy networking and professional connections
+                          </p>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                          <div className="grid gap-4">
+                            {socialPlatforms.map((platform) => {
+                              const Icon = platform.icon;
+                              const currentValue = form.watch(`socialLinks.${platform.key}`);
+                              
+                              return (
+                                <div key={platform.key} className="space-y-2">
+                                  <FormField
+                                    control={form.control}
+                                    name={`socialLinks.${platform.key}`}
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel className="flex items-center gap-2">
+                                          <Icon className={`w-4 h-4 ${platform.color}`} />
+                                          {platform.name}
+                                        </FormLabel>
+                                        <div className="flex gap-2">
+                                          <FormControl>
+                                            <Input
+                                              placeholder={platform.placeholder}
+                                              {...field}
+                                              className="flex-1"
+                                            />
+                                          </FormControl>
+                                          {currentValue && (
+                                            <div className="flex gap-1">
+                                              <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={async () => {
+                                                  try {
+                                                    await navigator.clipboard.writeText(currentValue);
+                                                  } catch (err) {
+                                                    console.error('Failed to copy:', err);
+                                                  }
+                                                }}
+                                                className="px-3"
+                                              >
+                                                <Copy className="w-4 h-4" />
+                                              </Button>
+                                              <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => window.open(currentValue, '_blank')}
+                                                className="px-3"
+                                              >
+                                                <ExternalLink className="w-4 h-4" />
+                                              </Button>
+                                            </div>
+                                          )}
+                                        </div>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                  
+                                  {platform.key !== 'website' && (
+                                    <div className="flex items-center gap-2 ml-6">
+                                      <span className="text-xs text-muted-foreground">Quick setup:</span>
+                                      <div className="flex items-center gap-1">
+                                        <span className="text-xs text-muted-foreground">{platform.baseUrl}</span>
+                                        <Input
+                                          placeholder="username"
+                                          className="h-6 text-xs w-24"
+                                          onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                              e.preventDefault();
+                                              const username = e.currentTarget.value.trim();
+                                              if (username) {
+                                                const fullUrl = platform.baseUrl + username;
+                                                form.setValue(`socialLinks.${platform.key}`, fullUrl);
+                                                e.currentTarget.value = '';
+                                              }
+                                            }
+                                          }}
+                                        />
+                                        <span className="text-xs text-muted-foreground">→ Press Enter</span>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                          
+                          <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
+                            <div className="flex items-start gap-2">
+                              <div className="w-2 h-2 bg-primary rounded-full mt-2"></div>
+                              <div>
+                                <p className="font-medium text-sm">Pro Tips for Social Integration:</p>
+                                <ul className="text-xs text-muted-foreground space-y-1 mt-1">
+                                  <li>• Use your complete profile URLs for better professional presentation</li>
+                                  <li>• LinkedIn connections are highly valued in professional networking</li>
+                                  <li>• GitHub profiles showcase your technical skills to other attendees</li>
+                                  <li>• Copy links to share with new connections quickly</li>
+                                </ul>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
                     </div>
                     
                     <div className="pt-6 border-t border-border">
@@ -666,10 +651,7 @@ export default function Profile() {
             </Card>
           </div>
           
-          {/* Social Media Integration Section */}
-          <div className="lg:col-span-3">
-            <SocialMediaIntegration form={form} />
-          </div>
+
         </div>
       </div>
     </div>

@@ -517,13 +517,13 @@ export default function Profile() {
                       </div>
                     </div>
                     
-                    {/* Social Media Integration Section */}
+                    {/* Social Media Links Section */}
                     <div className="col-span-full">
                       <Card>
                         <CardHeader>
                           <CardTitle className="flex items-center gap-2">
                             <Link className="w-5 h-5" />
-                            Social Media Integration
+                            Social Media Links
                           </CardTitle>
                           <p className="text-sm text-muted-foreground">
                             Connect your social profiles for easy networking and professional connections
@@ -621,7 +621,7 @@ export default function Profile() {
                             <div className="flex items-start gap-2">
                               <div className="w-2 h-2 bg-primary rounded-full mt-2"></div>
                               <div>
-                                <p className="font-medium text-sm">Pro Tips for Social Integration:</p>
+                                <p className="font-medium text-sm">Pro Tips for Social Links:</p>
                                 <ul className="text-xs text-muted-foreground space-y-1 mt-1">
                                   <li>• Use your complete profile URLs for better professional presentation</li>
                                   <li>• LinkedIn connections are highly valued in professional networking</li>

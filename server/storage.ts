@@ -1,4 +1,4 @@
-import { users, events, eventAttendees, connections, type User, type InsertUser, type Event, type InsertEvent, type EventAttendee, type InsertEventAttendee, type Connection, type InsertConnection, type EventWithHost, type EventWithAttendees, type UserProfile } from "@shared/schema";
+import { users, events, eventAttendees, connections, type User, type InsertUser, type GoogleUser, type Event, type InsertEvent, type EventAttendee, type InsertEventAttendee, type Connection, type InsertConnection, type EventWithHost, type EventWithAttendees, type UserProfile } from "@shared/schema";
 import { nanoid } from "nanoid";
 import { db } from "./db";
 import { eq, and, sql } from "drizzle-orm";
@@ -6,9 +6,11 @@ import { eq, and, sql } from "drizzle-orm";
 export interface IStorage {
   // User operations
   createUser(user: InsertUser): Promise<UserProfile>;
+  createGoogleUser(user: GoogleUser): Promise<UserProfile>;
   getUserById(id: number): Promise<UserProfile | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByGoogleId(googleId: string): Promise<User | undefined>;
   updateUser(id: number, updates: Partial<Omit<User, 'id' | 'createdAt'>>): Promise<UserProfile>;
 
   // Event operations
@@ -45,7 +47,23 @@ export class DatabaseStorage implements IStorage {
     const { confirmPassword, ...userData } = user;
     const [newUser] = await db
       .insert(users)
-      .values(userData)
+      .values([{
+        ...userData,
+        socialLinks: userData.socialLinks as any
+      }])
+      .returning();
+    
+    const { password, ...userProfile } = newUser;
+    return userProfile;
+  }
+
+  async createGoogleUser(user: GoogleUser): Promise<UserProfile> {
+    const [newUser] = await db
+      .insert(users)
+      .values([{
+        ...user,
+        socialLinks: user.socialLinks as any
+      }])
       .returning();
     
     const { password, ...userProfile } = newUser;
@@ -67,6 +85,11 @@ export class DatabaseStorage implements IStorage {
 
   async getUserByUsername(username: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
+  }
+
+  async getUserByGoogleId(googleId: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.googleId, googleId));
     return user || undefined;
   }
 
@@ -119,6 +142,8 @@ export class DatabaseStorage implements IStorage {
         date: events.date,
         qrCode: events.qrCode,
         isActive: events.isActive,
+        isPublic: events.isPublic,
+        visibleFields: events.visibleFields,
         createdAt: events.createdAt,
         hostUser: {
           id: users.id,
@@ -136,6 +161,8 @@ export class DatabaseStorage implements IStorage {
           interests: users.interests,
           socialLinks: users.socialLinks,
           profilePhoto: users.profilePhoto,
+          googleId: users.googleId,
+          authProvider: users.authProvider,
           createdAt: users.createdAt,
         },
         attendeeCount: sql<number>`(SELECT COUNT(*) FROM ${eventAttendees} WHERE ${eventAttendees.eventId} = ${events.id})`
@@ -152,6 +179,8 @@ export class DatabaseStorage implements IStorage {
       date: event.date,
       qrCode: event.qrCode,
       isActive: event.isActive,
+      isPublic: event.isPublic,
+      visibleFields: event.visibleFields,
       createdAt: event.createdAt,
       host: {
         id: event.hostUser.id,
@@ -169,6 +198,8 @@ export class DatabaseStorage implements IStorage {
         interests: event.hostUser.interests,
         socialLinks: event.hostUser.socialLinks,
         profilePhoto: event.hostUser.profilePhoto,
+        googleId: event.hostUser.googleId,
+        authProvider: event.hostUser.authProvider,
         createdAt: event.hostUser.createdAt,
       },
       attendeeCount: event.attendeeCount
@@ -237,6 +268,8 @@ export class DatabaseStorage implements IStorage {
         interests: users.interests,
         socialLinks: users.socialLinks,
         profilePhoto: users.profilePhoto,
+        googleId: users.googleId,
+        authProvider: users.authProvider,
         createdAt: users.createdAt,
       })
       .from(eventAttendees)
@@ -257,6 +290,8 @@ export class DatabaseStorage implements IStorage {
         date: events.date,
         qrCode: events.qrCode,
         isActive: events.isActive,
+        isPublic: events.isPublic,
+        visibleFields: events.visibleFields,
         createdAt: events.createdAt,
       })
       .from(eventAttendees)
@@ -317,6 +352,8 @@ export class DatabaseStorage implements IStorage {
         interests: users.interests,
         socialLinks: users.socialLinks,
         profilePhoto: users.profilePhoto,
+        googleId: users.googleId,
+        authProvider: users.authProvider,
         createdAt: users.createdAt,
       })
       .from(connections)
@@ -337,12 +374,18 @@ export class DatabaseStorage implements IStorage {
         email: users.email,
         fullName: users.fullName,
         age: users.age,
+        hometown: users.hometown,
+        state: users.state,
+        college: users.college,
+        highSchool: users.highSchool,
         school: users.school,
         background: users.background,
         aspirations: users.aspirations,
         interests: users.interests,
         socialLinks: users.socialLinks,
         profilePhoto: users.profilePhoto,
+        googleId: users.googleId,
+        authProvider: users.authProvider,
         createdAt: users.createdAt,
       })
       .from(connections)
@@ -389,7 +432,7 @@ export class DatabaseStorage implements IStorage {
           let score = 0;
           
           // Check for interest matches in event name/description
-          user.interests.forEach(interest => {
+          user.interests?.forEach(interest => {
             const interestLower = interest.toLowerCase();
             if (event.name.toLowerCase().includes(interestLower)) score += 3;
             if (event.description?.toLowerCase().includes(interestLower)) score += 2;

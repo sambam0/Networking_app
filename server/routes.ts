@@ -5,6 +5,7 @@ import { insertUserSchema, insertEventSchema, insertEventAttendeeSchema, insertC
 import { z } from "zod";
 import multer from "multer";
 import path from "path";
+import { setupAuth, passport } from "./auth";
 
 const upload = multer({ 
   storage: multer.memoryStorage(),
@@ -39,9 +40,12 @@ const loginSchema = z.object({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Setup authentication
+  setupAuth(app);
+
   // Auth middleware
   const requireAuth = (req: any, res: any, next: any) => {
-    if (!req.session?.user) {
+    if (!req.session?.user && !req.user) {
       return res.status(401).json({ message: 'Authentication required' });
     }
     next();
@@ -89,9 +93,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Google OAuth routes - only if credentials are available
+  if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+    app.get('/api/auth/google', 
+      passport.authenticate('google', { scope: ['profile', 'email'] })
+    );
+
+    app.get('/api/auth/google/callback',
+      passport.authenticate('google', { failureRedirect: '/login' }),
+      (req, res) => {
+        // Successful authentication, set session and redirect
+        req.session.user = { 
+          id: (req.user as any).id, 
+          email: (req.user as any).email, 
+          username: (req.user as any).username 
+        };
+        res.redirect('/');
+      }
+    );
+  } else {
+    // Placeholder routes when Google OAuth is not configured
+    app.get('/api/auth/google', (req, res) => {
+      res.status(501).json({ message: 'Google OAuth not configured' });
+    });
+    
+    app.get('/api/auth/google/callback', (req, res) => {
+      res.status(501).json({ message: 'Google OAuth not configured' });
+    });
+  }
+
   app.get('/api/auth/me', requireAuth, async (req, res) => {
     try {
-      const user = await storage.getUserById(req.session.user.id);
+      const userId = req.session?.user?.id || (req.user as any)?.id;
+      const user = await storage.getUserById(userId);
       if (!user) {
         return res.status(404).json({ message: 'User not found' });
       }

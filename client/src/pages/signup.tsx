@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Badge } from "@/components/ui/badge";
+import { GoogleButton } from "@/components/ui/google-button";
 import { useAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 import { Upload, X, Plus } from "lucide-react";
@@ -404,6 +405,21 @@ export default function SignUp() {
                 >
                   Create Profile & Join Events
                 </Button>
+                
+                <div className="relative mt-6">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">
+                      Or continue with
+                    </span>
+                  </div>
+                </div>
+                
+                <GoogleButton>
+                  Sign up with Google
+                </GoogleButton>
                 
                 <p className="text-center text-sm text-muted-foreground mt-4">
                   Already have an account?{" "}

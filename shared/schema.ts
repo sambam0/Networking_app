@@ -7,9 +7,9 @@ export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
   email: text("email").notNull().unique(),
-  password: text("password").notNull(),
+  password: text("password"), // Make password optional for Google OAuth users
   fullName: text("full_name").notNull(),
-  age: integer("age").notNull(),
+  age: integer("age"),
   hometown: text("hometown"),
   state: text("state"),
   college: text("college"),
@@ -29,6 +29,8 @@ export const users = pgTable("users", {
     youtube?: string;
   }>(),
   profilePhoto: text("profile_photo"),
+  googleId: text("google_id").unique(), // Add Google ID for OAuth users
+  authProvider: text("auth_provider").notNull().default("email"), // Track auth method
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -124,10 +126,26 @@ export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
 }).extend({
-  confirmPassword: z.string().min(8),
-}).refine(data => data.password === data.confirmPassword, {
+  confirmPassword: z.string().min(8).optional(),
+}).refine((data) => {
+  // Only require password confirmation for email auth
+  if (data.authProvider === "email") {
+    return data.password && data.confirmPassword && data.password === data.confirmPassword;
+  }
+  return true;
+}, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
+});
+
+// Separate schema for Google OAuth signup
+export const insertGoogleUserSchema = createInsertSchema(users).omit({
+  id: true,
+  createdAt: true,
+  password: true,
+}).extend({
+  authProvider: z.literal("google"),
+  googleId: z.string(),
 });
 
 export const insertEventSchema = createInsertSchema(events).omit({
@@ -200,3 +218,4 @@ export type EventWithAttendees = Event & {
 };
 
 export type UserProfile = Omit<User, 'password'>;
+export type GoogleUser = z.infer<typeof insertGoogleUserSchema>;

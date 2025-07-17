@@ -39,6 +39,25 @@ const loginSchema = z.object({
   password: z.string().min(1),
 });
 
+const basicSignupSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8),
+});
+
+const profileCompleteSchema = z.object({
+  username: z.string().min(3),
+  fullName: z.string().min(2),
+  age: z.number().min(13).max(120),
+  hometown: z.string().optional(),
+  state: z.string().optional(),
+  college: z.string().optional(),
+  highSchool: z.string().optional(),
+  background: z.string().optional(),
+  aspirations: z.string().optional(),
+  interests: z.string().optional(), // JSON string of array
+  socialLinks: z.string().optional(), // JSON string of object
+});
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication
   setupAuth(app);
@@ -52,6 +71,92 @@ export async function registerRoutes(app: Express): Promise<Server> {
   };
 
   // Auth routes
+  // Step 1: Basic signup with email/password
+  app.post('/api/auth/signup-basic', async (req, res) => {
+    try {
+      const { email, password } = basicSignupSchema.parse(req.body);
+      
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(email);
+      if (existingUser) {
+        return res.status(400).json({ message: 'User already exists' });
+      }
+
+      // Create basic user with temporary username
+      const tempUsername = email.split('@')[0] + '_' + Date.now();
+      const user = await storage.createUser({
+        email,
+        password,
+        username: tempUsername,
+        fullName: '',
+        confirmPassword: password,
+      });
+      
+      req.session.user = { id: user.id, email: user.email, username: user.username };
+      res.json(user);
+    } catch (error) {
+      res.status(400).json({ message: error instanceof Error ? error.message : 'Invalid data' });
+    }
+  });
+
+  // Step 2: Complete profile
+  app.post('/api/auth/complete-profile', requireAuth, upload.single('profilePhoto'), async (req, res) => {
+    try {
+      const userId = req.session.user?.id || (req.user as any)?.id;
+      if (!userId) {
+        return res.status(401).json({ message: 'User not authenticated' });
+      }
+
+      const profileData = profileCompleteSchema.parse(req.body);
+      
+      // Parse JSON fields
+      const interests = profileData.interests ? JSON.parse(profileData.interests) : [];
+      const socialLinks = profileData.socialLinks ? JSON.parse(profileData.socialLinks) : {};
+
+      // Check if username is already taken (exclude current user)
+      const existingUser = await storage.getUserByUsername(profileData.username);
+      if (existingUser && existingUser.id !== userId) {
+        return res.status(400).json({ message: 'Username already taken' });
+      }
+
+      // Handle profile photo if uploaded
+      let profilePhotoPath = undefined;
+      if (req.file) {
+        // In a real app, you'd save to cloud storage
+        // For now, we'll store as base64 (not recommended for production)
+        profilePhotoPath = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+      }
+
+      // Update user with complete profile
+      const updatedUser = await storage.updateUser(userId, {
+        username: profileData.username,
+        fullName: profileData.fullName,
+        age: profileData.age,
+        hometown: profileData.hometown,
+        state: profileData.state,
+        college: profileData.college,
+        highSchool: profileData.highSchool,
+        background: profileData.background,
+        aspirations: profileData.aspirations,
+        interests,
+        socialLinks,
+        ...(profilePhotoPath && { profilePhoto: profilePhotoPath }),
+      });
+
+      // Update session
+      req.session.user = { 
+        id: updatedUser.id, 
+        email: updatedUser.email, 
+        username: updatedUser.username 
+      };
+
+      res.json(updatedUser);
+    } catch (error) {
+      res.status(400).json({ message: error instanceof Error ? error.message : 'Invalid data' });
+    }
+  });
+
+  // Legacy full signup (keep for backward compatibility)
   app.post('/api/auth/signup', async (req, res) => {
     try {
       const userData = insertUserSchema.parse(req.body);
@@ -103,12 +208,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       passport.authenticate('google', { failureRedirect: '/login' }),
       (req, res) => {
         // Successful authentication, set session and redirect
+        const user = req.user as any;
         req.session.user = { 
-          id: (req.user as any).id, 
-          email: (req.user as any).email, 
-          username: (req.user as any).username 
+          id: user.id, 
+          email: user.email, 
+          username: user.username 
         };
-        res.redirect('/');
+        
+        // Check if this is a new user who needs to complete their profile
+        // Google users created with incomplete profile should go to completion
+        if (user.username.includes('user_') || !user.fullName || user.fullName === '') {
+          res.redirect('/signup/complete');
+        } else {
+          res.redirect('/dashboard');
+        }
       }
     );
   } else {

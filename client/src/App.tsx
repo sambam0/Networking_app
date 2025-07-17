@@ -5,6 +5,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
+import SignupAuth from "@/pages/signup-auth";
+import SignupComplete from "@/pages/signup-complete";
 import SignUp from "@/pages/signup";
 import Login from "@/pages/login";
 import Dashboard from "@/pages/dashboard";
@@ -20,7 +22,9 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
-      <Route path="/signup" component={SignUp} />
+      <Route path="/signup" component={SignupAuth} />
+      <Route path="/signup/complete" component={SignupComplete} />
+      <Route path="/signup/legacy" component={SignUp} />
       <Route path="/login" component={Login} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/create-event" component={CreateEvent} />

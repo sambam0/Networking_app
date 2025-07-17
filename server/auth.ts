@@ -32,12 +32,13 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
         return done(null, updatedUser);
       }
 
-      // Create new user from Google profile
+      // Create new user from Google profile with basic info
+      // They'll complete their profile in the next step
       const newUser = await storage.createGoogleUser({
         googleId: profile.id,
         email: profile.emails?.[0]?.value || '',
         fullName: profile.displayName || '',
-        username: profile.emails?.[0]?.value?.split('@')[0] || `user_${profile.id}`,
+        username: `user_${profile.id}`, // Temporary username, they'll choose their own
         authProvider: 'google',
         profilePhoto: profile.photos?.[0]?.value,
       });

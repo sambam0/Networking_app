@@ -8,6 +8,9 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   signup: (userData: any) => Promise<void>;
+  basicSignup: (email: string, password: string) => Promise<void>;
+  completeProfile: (profileData: FormData) => Promise<void>;
+  refetch: () => Promise<void>;
   isLoading: boolean;
 }
 
@@ -73,6 +76,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await signupMutation.mutateAsync(userData);
   };
 
+  const basicSignup = async (email: string, password: string) => {
+    const response = await apiRequest("/api/auth/signup-basic", {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
+      headers: { "Content-Type": "application/json" },
+    });
+    setUser(response);
+    queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
+  };
+
+  const completeProfile = async (profileData: FormData) => {
+    const response = await apiRequest("/api/auth/complete-profile", {
+      method: "POST",
+      body: profileData,
+    });
+    setUser(response);
+    queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
+  };
+
+  const refetch = async () => {
+    try {
+      const response = await apiRequest("/api/auth/me");
+      setUser(response);
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
+    } catch (error) {
+      setUser(null);
+      throw error;
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -80,6 +113,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         login,
         logout,
         signup,
+        basicSignup,
+        completeProfile,
+        refetch,
         isLoading: isLoading || loginMutation.isPending || logoutMutation.isPending || signupMutation.isPending,
       }}
     >

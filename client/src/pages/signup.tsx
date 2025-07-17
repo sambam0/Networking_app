@@ -31,6 +31,10 @@ export default function SignUp() {
       confirmPassword: "",
       fullName: "",
       age: 18,
+      hometown: "",
+      state: "",
+      college: "",
+      highSchool: "",
       school: "",
       background: "",
       aspirations: "",
@@ -192,15 +196,64 @@ export default function SignUp() {
                     )}
                   />
                   
-                  <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="age"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Age</FormLabel>
+                        <FormControl>
+                          <Input type="number" placeholder="28" {...field} onChange={(e) => field.onChange(parseInt(e.target.value) || 18)} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Location Section */}
+                  <div className="space-y-4">
+                    <h4 className="text-sm font-medium text-foreground">Location</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="hometown"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Hometown</FormLabel>
+                            <FormControl>
+                              <Input placeholder="San Francisco" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="state"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>State</FormLabel>
+                            <FormControl>
+                              <Input placeholder="California" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Education Section */}
+                  <div className="space-y-4">
+                    <h4 className="text-sm font-medium text-foreground">Education</h4>
                     <FormField
                       control={form.control}
-                      name="age"
+                      name="college"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Age</FormLabel>
+                          <FormLabel>College/University</FormLabel>
                           <FormControl>
-                            <Input type="number" placeholder="28" {...field} onChange={(e) => field.onChange(parseInt(e.target.value) || 18)} />
+                            <Input placeholder="Stanford University" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -208,12 +261,12 @@ export default function SignUp() {
                     />
                     <FormField
                       control={form.control}
-                      name="school"
+                      name="highSchool"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>School</FormLabel>
+                          <FormLabel>High School</FormLabel>
                           <FormControl>
-                            <Input placeholder="Stanford University" {...field} />
+                            <Input placeholder="Lincoln High School" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

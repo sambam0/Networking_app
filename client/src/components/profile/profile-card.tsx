@@ -36,8 +36,25 @@ export default function ProfileCard({ user, onConnect, onViewProfile }: ProfileC
           </Avatar>
           
           <h3 className="text-lg font-semibold text-foreground mb-2">{user.fullName}</h3>
-          {user.school && (
-            <p className="text-sm text-muted-foreground mb-3">{user.school}</p>
+          
+          {/* Location Information */}
+          {(user.hometown || user.state) && (
+            <p className="text-sm text-muted-foreground mb-2">
+              📍 {user.hometown}{user.hometown && user.state ? ', ' : ''}{user.state}
+            </p>
+          )}
+          
+          {/* Education Information */}
+          {user.college && (
+            <p className="text-sm text-muted-foreground mb-1">🎓 {user.college}</p>
+          )}
+          {user.highSchool && (
+            <p className="text-sm text-muted-foreground mb-2">🏫 {user.highSchool}</p>
+          )}
+          
+          {/* Legacy school field */}
+          {user.school && !user.college && !user.highSchool && (
+            <p className="text-sm text-muted-foreground mb-3">🎓 {user.school}</p>
           )}
           
           {user.background && (

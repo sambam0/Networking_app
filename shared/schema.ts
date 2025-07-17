@@ -10,7 +10,11 @@ export const users = pgTable("users", {
   password: text("password").notNull(),
   fullName: text("full_name").notNull(),
   age: integer("age").notNull(),
-  school: text("school"),
+  hometown: text("hometown"),
+  state: text("state"),
+  college: text("college"),
+  highSchool: text("high_school"),
+  school: text("school"), // Keep for backward compatibility
   background: text("background"),
   aspirations: text("aspirations"),
   interests: text("interests").array(),

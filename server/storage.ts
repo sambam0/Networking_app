@@ -390,6 +390,25 @@ export class DatabaseStorage implements IStorage {
               );
               score += sharedInterests.length * 0.5;
             }
+            
+            // Bonus for attendees from same location
+            if (user.hometown && attendee.hometown && 
+                user.hometown.toLowerCase() === attendee.hometown.toLowerCase()) {
+              score += 1;
+            } else if (user.state && attendee.state && 
+                       user.state.toLowerCase() === attendee.state.toLowerCase()) {
+              score += 0.5;
+            }
+            
+            // Bonus for attendees from same schools
+            if (user.college && attendee.college && 
+                user.college.toLowerCase() === attendee.college.toLowerCase()) {
+              score += 1.5;
+            }
+            if (user.highSchool && attendee.highSchool && 
+                user.highSchool.toLowerCase() === attendee.highSchool.toLowerCase()) {
+              score += 1;
+            }
           });
           
           return { event, score };
@@ -435,38 +454,80 @@ export class DatabaseStorage implements IStorage {
       new Map(potentialConnections.map(u => [u.id, u])).values()
     );
     
-    // Score users based on:
-    // 1. Shared interests
-    // 2. Similar background (school, age)
-    // 3. Complementary aspirations
+    // Enhanced scoring algorithm that considers location, education, interests, and aspirations
     const scoredUsers = uniqueUsers.map(person => {
       let score = 0;
       
-      // Shared interests (highest weight)
+      // Shared interests (highest weight - 5 points per interest)
       if (user.interests && person.interests) {
         const sharedInterests = user.interests.filter(i => 
           person.interests?.includes(i)
         );
-        score += sharedInterests.length * 3;
+        score += sharedInterests.length * 5;
       }
       
-      // Similar school
+      // Location matching - hometown gets higher score than state
+      if (user.hometown && person.hometown && 
+          user.hometown.toLowerCase() === person.hometown.toLowerCase()) {
+        score += 7; // Same hometown - very strong connection
+      } else if (user.state && person.state && 
+                 user.state.toLowerCase() === person.state.toLowerCase()) {
+        score += 4; // Same state - moderate connection
+      }
+      
+      // Education matching - college gets higher score than high school
+      if (user.college && person.college && 
+          user.college.toLowerCase() === person.college.toLowerCase()) {
+        score += 8; // Same college - very strong academic connection
+      }
+      
+      if (user.highSchool && person.highSchool && 
+          user.highSchool.toLowerCase() === person.highSchool.toLowerCase()) {
+        score += 6; // Same high school - strong local connection
+      }
+      
+      // Legacy school field for backward compatibility
       if (user.school && person.school && user.school === person.school) {
-        score += 2;
+        score += 6;
       }
       
-      // Similar age (within 5 years)
-      if (user.age && person.age && Math.abs(user.age - person.age) <= 5) {
-        score += 1;
+      // Similar age (within 5 years) - graduated scoring
+      if (user.age && person.age) {
+        const ageDiff = Math.abs(user.age - person.age);
+        if (ageDiff <= 2) {
+          score += 3; // Very close age
+        } else if (ageDiff <= 5) {
+          score += 2; // Similar age
+        }
       }
       
-      // Check for complementary aspirations/background
+      // Aspirations keyword matching (enhanced)
+      if (user.aspirations && person.aspirations) {
+        const userWords = user.aspirations.toLowerCase().split(/\s+/);
+        const personWords = person.aspirations.toLowerCase().split(/\s+/);
+        const commonWords = userWords.filter(word => 
+          word.length > 4 && personWords.includes(word)
+        );
+        score += commonWords.length * 2; // Career goal alignment
+      }
+      
+      // Background similarity
+      if (user.background && person.background) {
+        const userWords = user.background.toLowerCase().split(/\s+/);
+        const personWords = person.background.toLowerCase().split(/\s+/);
+        const commonWords = userWords.filter(word => 
+          word.length > 4 && personWords.includes(word)
+        );
+        score += commonWords.length * 1.5; // Professional background similarity
+      }
+      
+      // Cross-field complementary matching (aspirations vs background)
       if (user.aspirations && person.background) {
         const userAspirationsLower = user.aspirations.toLowerCase();
         const personBackgroundLower = person.background.toLowerCase();
         
-        // Simple keyword matching for complementary skills
-        const keywords = ['design', 'tech', 'startup', 'business', 'engineering', 'product'];
+        // Enhanced keyword matching for complementary skills
+        const keywords = ['design', 'tech', 'startup', 'business', 'engineering', 'product', 'marketing', 'data', 'finance', 'consulting'];
         keywords.forEach(keyword => {
           if (userAspirationsLower.includes(keyword) && personBackgroundLower.includes(keyword)) {
             score += 1;

@@ -48,9 +48,32 @@ export default function ProfileModal({ user, isOpen, onClose, onConnect }: Profi
             </Avatar>
             
             <h3 className="text-2xl font-bold text-foreground mb-2">{user.fullName}</h3>
-            <p className="text-muted-foreground mb-1">{user.age} years old</p>
-            {user.school && (
-              <p className="text-primary font-medium mb-6">{user.school}</p>
+            <p className="text-muted-foreground mb-3">{user.age} years old</p>
+            
+            {/* Location Information */}
+            {(user.hometown || user.state) && (
+              <div className="mb-3">
+                <p className="text-sm font-medium text-foreground mb-1">📍 Location</p>
+                <p className="text-muted-foreground">
+                  {user.hometown}{user.hometown && user.state ? ', ' : ''}{user.state}
+                </p>
+              </div>
+            )}
+            
+            {/* Education Information */}
+            {(user.college || user.highSchool || user.school) && (
+              <div className="mb-6">
+                <p className="text-sm font-medium text-foreground mb-2">🎓 Education</p>
+                {user.college && (
+                  <p className="text-primary font-medium mb-1">{user.college}</p>
+                )}
+                {user.highSchool && (
+                  <p className="text-muted-foreground mb-1">{user.highSchool}</p>
+                )}
+                {user.school && !user.college && !user.highSchool && (
+                  <p className="text-primary font-medium">{user.school}</p>
+                )}
+              </div>
             )}
             
             {user.socialLinks && (

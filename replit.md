@@ -117,6 +117,23 @@ The application follows a monorepo structure with clear separation between clien
 
 ## Recent Changes
 
+### Enhanced Profile System with Location & Education (July 2025)
+- Added separate fields for hometown, state, college, and high school in user profiles
+- Updated database schema with new location and education columns
+- Enhanced signup and profile forms with dedicated location and education sections
+- Updated profile cards and modals to display new information with icons
+- Maintained backward compatibility with legacy school field
+
+### Advanced Recommendation Engine (July 2025)
+- Enhanced people recommendation algorithm with sophisticated scoring:
+  - Location matching: Same hometown (7 pts), same state (4 pts)
+  - Education matching: Same college (8 pts), same high school (6 pts)
+  - Shared interests (5 pts per interest)
+  - Age proximity with graduated scoring
+  - Background and aspirations similarity through keyword matching
+- Improved event recommendations to consider attendee location and education
+- Recommendations now provide meaningful matches based on 5 key criteria: location, education, interests, aspirations, and age
+
 ### Database Migration (January 2025)
 - Migrated from in-memory storage to PostgreSQL database using Neon
 - Added database relations between users, events, attendees, and connections

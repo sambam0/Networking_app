@@ -19,6 +19,10 @@ import { Upload, X, Plus, User, Save } from "lucide-react";
 const profileUpdateSchema = z.object({
   fullName: z.string().min(1, "Full name is required"),
   age: z.number().min(13, "Must be at least 13 years old"),
+  hometown: z.string().optional(),
+  state: z.string().optional(),
+  college: z.string().optional(),
+  highSchool: z.string().optional(),
   school: z.string().optional(),
   background: z.string().optional(),
   aspirations: z.string().optional(),
@@ -43,6 +47,10 @@ export default function Profile() {
     defaultValues: {
       fullName: user?.fullName || "",
       age: user?.age || 18,
+      hometown: user?.hometown || "",
+      state: user?.state || "",
+      college: user?.college || "",
+      highSchool: user?.highSchool || "",
       school: user?.school || "",
       background: user?.background || "",
       aspirations: user?.aspirations || "",
@@ -61,6 +69,10 @@ export default function Profile() {
       // Append all form fields, ensuring we include all values
       formData.append('fullName', data.fullName || '');
       formData.append('age', String(data.age || 18));
+      formData.append('hometown', data.hometown || '');
+      formData.append('state', data.state || '');
+      formData.append('college', data.college || '');
+      formData.append('highSchool', data.highSchool || '');
       formData.append('school', data.school || '');
       formData.append('background', data.background || '');
       formData.append('aspirations', data.aspirations || '');
@@ -222,20 +234,69 @@ export default function Profile() {
                           )}
                         />
                         
-                        <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="age"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Age</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  type="number" 
+                                  placeholder="28" 
+                                  {...field} 
+                                  onChange={(e) => field.onChange(parseInt(e.target.value) || 18)} 
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        {/* Location Section */}
+                        <div className="space-y-4">
+                          <h4 className="text-sm font-medium text-foreground">Location</h4>
+                          <div className="grid grid-cols-2 gap-4">
+                            <FormField
+                              control={form.control}
+                              name="hometown"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Hometown</FormLabel>
+                                  <FormControl>
+                                    <Input placeholder="San Francisco" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="state"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>State</FormLabel>
+                                  <FormControl>
+                                    <Input placeholder="California" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Education Section */}
+                        <div className="space-y-4">
+                          <h4 className="text-sm font-medium text-foreground">Education</h4>
                           <FormField
                             control={form.control}
-                            name="age"
+                            name="college"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Age</FormLabel>
+                                <FormLabel>College/University</FormLabel>
                                 <FormControl>
-                                  <Input 
-                                    type="number" 
-                                    placeholder="28" 
-                                    {...field} 
-                                    onChange={(e) => field.onChange(parseInt(e.target.value) || 18)} 
-                                  />
+                                  <Input placeholder="Stanford University" {...field} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -243,12 +304,12 @@ export default function Profile() {
                           />
                           <FormField
                             control={form.control}
-                            name="school"
+                            name="highSchool"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>School</FormLabel>
+                                <FormLabel>High School</FormLabel>
                                 <FormControl>
-                                  <Input placeholder="Stanford University" {...field} />
+                                  <Input placeholder="Lincoln High School" {...field} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>

@@ -14,6 +14,7 @@ import CreateEvent from "@/pages/create-event";
 import EventDetail from "@/pages/event-detail";
 import JoinEvent from "@/pages/join-event";
 import Profile from "@/pages/profile";
+import AdminPage from "@/pages/admin";
 import { AuthProvider } from "@/lib/auth";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -31,6 +32,7 @@ function Router() {
       <Route path="/events/:id" component={EventDetail} />
       <Route path="/join/:qrCode" component={JoinEvent} />
       <Route path="/profile" component={Profile} />
+      <Route path="/admin" component={AdminPage} />
       <Route component={NotFound} />
     </Switch>
   );

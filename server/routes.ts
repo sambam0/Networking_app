@@ -585,6 +585,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin routes (protected)
+  const requireAdmin = async (req: any, res: any, next: any) => {
+    if (!req.session?.user) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
+    
+    // Check if user is admin (modify this logic as needed)
+    const user = await storage.getUserById(req.session.user.id);
+    const isAdmin = user?.email === 'admin@realconnect.ing' || user?.id === 1;
+    
+    if (!isAdmin) {
+      return res.status(403).json({ message: 'Admin access required' });
+    }
+    
+    next();
+  };
+
+  // Get all users (admin only)
+  app.get('/api/admin/users', requireAdmin, async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      res.json(users);
+    } catch (error) {
+      console.error('Error fetching all users:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
+  });
+
+  // Get all events (admin only)
+  app.get('/api/admin/events', requireAdmin, async (req, res) => {
+    try {
+      const events = await storage.getAllEventsWithDetails();
+      res.json(events);
+    } catch (error) {
+      console.error('Error fetching all events:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
+  });
+
+  // Get all connections (admin only)
+  app.get('/api/admin/connections', requireAdmin, async (req, res) => {
+    try {
+      const connections = await storage.getAllConnections();
+      res.json(connections);
+    } catch (error) {
+      console.error('Error fetching all connections:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
+  });
+
+  // Get admin stats (admin only)
+  app.get('/api/admin/stats', requireAdmin, async (req, res) => {
+    try {
+      const [users, events, connections] = await Promise.all([
+        storage.getAllUsers(),
+        storage.getAllEvents(),
+        storage.getAllConnections()
+      ]);
+
+      const stats = {
+        totalUsers: users.length,
+        totalEvents: events.length,
+        totalConnections: connections.length,
+        activeToday: users.filter((user: any) => {
+          // Check if user was active today (you can implement this logic)
+          return new Date(user.createdAt || new Date()).toDateString() === new Date().toDateString();
+        }).length
+      };
+
+      res.json(stats);
+    } catch (error) {
+      console.error('Error fetching admin stats:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

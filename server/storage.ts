@@ -37,6 +37,11 @@ export interface IStorage {
   // Recommendation operations
   getRecommendedEvents(userId: number): Promise<EventWithHost[]>;
   getRecommendedPeople(userId: number, eventId?: number): Promise<UserProfile[]>;
+
+  // Admin operations
+  getAllUsers(): Promise<User[]>;
+  getAllEventsWithDetails(): Promise<EventWithAttendees[]>;
+  getAllConnections(): Promise<any[]>;
 }
 
 
@@ -604,6 +609,85 @@ export class DatabaseStorage implements IStorage {
       .sort((a, b) => b.score - a.score)
       .slice(0, 10)
       .map(({ person }) => person);
+  }
+
+  // Admin operations
+  async getAllUsers(): Promise<User[]> {
+    const allUsers = await db.select().from(users);
+    return allUsers;
+  }
+
+  async getAllEventsWithDetails(): Promise<EventWithAttendees[]> {
+    const allEvents = await db
+      .select({
+        id: events.id,
+        name: events.name,
+        description: events.description,
+        date: events.date,
+        location: events.location,
+        qrCode: events.qrCode,
+        isPublic: events.isPublic,
+        isActive: events.isActive,
+        hostId: events.hostId,
+        visibleFields: events.visibleFields,
+        createdAt: events.createdAt,
+        host: {
+          id: users.id,
+          username: users.username,
+          fullName: users.fullName,
+          email: users.email,
+          profilePhoto: users.profilePhoto,
+        },
+      })
+      .from(events)
+      .leftJoin(users, eq(events.hostId, users.id));
+
+    // Get attendees for each event
+    const eventsWithAttendees = await Promise.all(
+      allEvents.map(async (event) => {
+        const attendees = await this.getEventAttendees(event.id);
+        return {
+          ...event,
+          attendees,
+        };
+      })
+    );
+
+    return eventsWithAttendees;
+  }
+
+  async getAllConnections(): Promise<any[]> {
+    const allConnections = await db
+      .select({
+        fromUserId: connections.fromUserId,
+        toUserId: connections.toUserId,
+        eventId: connections.eventId,
+        createdAt: connections.createdAt,
+        user1: {
+          id: sql`u1.id`,
+          username: sql`u1.username`,
+          fullName: sql`u1.full_name`,
+          email: sql`u1.email`,
+        },
+        user2: {
+          id: sql`u2.id`,
+          username: sql`u2.username`,
+          fullName: sql`u2.full_name`,
+          email: sql`u2.email`,
+        },
+        event: {
+          id: events.id,
+          name: events.name,
+          date: events.date,
+          location: events.location,
+        },
+      })
+      .from(connections)
+      .leftJoin(sql`${users} u1`, sql`${connections.fromUserId} = u1.id`)
+      .leftJoin(sql`${users} u2`, sql`${connections.toUserId} = u2.id`)
+      .leftJoin(events, eq(connections.eventId, events.id));
+
+    return allConnections;
   }
 }
 

@@ -772,6 +772,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Analytics route
+  app.get('/api/admin/analytics', requireAdmin, async (req, res) => {
+    try {
+      const analyticsData = await storage.getAnalyticsData();
+      res.json(analyticsData);
+    } catch (error) {
+      console.error('Error fetching analytics data:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

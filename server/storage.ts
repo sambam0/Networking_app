@@ -47,6 +47,7 @@ export interface IStorage {
   revokeAdminPrivileges(userId: number): Promise<boolean>;
   updateAdminLevel(userId: number, adminLevel: string): Promise<any>;
   checkAdminPrivileges(userId: number): Promise<{ isAdmin: boolean; adminLevel: string; isSystemAdmin: boolean }>;
+  getAnalyticsData(): Promise<any>;
 }
 
 
@@ -826,6 +827,174 @@ export class DatabaseStorage implements IStorage {
       isAdmin: true,
       adminLevel: adminPrivs.adminLevel,
       isSystemAdmin: adminPrivs.isSystemAdmin,
+    };
+  }
+
+  async getAnalyticsData(): Promise<any> {
+    // Event time distribution
+    const eventTimeQuery = await db
+      .select({
+        hour: sql`EXTRACT(HOUR FROM ${events.date})::integer`,
+        count: sql`COUNT(*)::integer`,
+      })
+      .from(events)
+      .groupBy(sql`EXTRACT(HOUR FROM ${events.date})`);
+
+    const eventTimeDistribution = Array.from({ length: 24 }, (_, hour) => {
+      const data = eventTimeQuery.find(e => e.hour === hour);
+      return {
+        hour,
+        count: data?.count || 0,
+        label: `${hour.toString().padStart(2, '0')}:00`,
+      };
+    });
+
+    // Event day distribution
+    const eventDayQuery = await db
+      .select({
+        dayOfWeek: sql`EXTRACT(DOW FROM ${events.date})::integer`,
+        count: sql`COUNT(*)::integer`,
+      })
+      .from(events)
+      .groupBy(sql`EXTRACT(DOW FROM ${events.date})`);
+
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const eventDayDistribution = dayNames.map((day, index) => {
+      const data = eventDayQuery.find(e => e.dayOfWeek === index);
+      return {
+        day,
+        count: data?.count || 0,
+      };
+    });
+
+    // User registration trend (last 30 days)
+    const registrationTrendQuery = await db
+      .select({
+        date: sql`DATE(${users.createdAt})`,
+        count: sql`COUNT(*)::integer`,
+      })
+      .from(users)
+      .where(sql`${users.createdAt} >= NOW() - INTERVAL '30 days'`)
+      .groupBy(sql`DATE(${users.createdAt})`)
+      .orderBy(sql`DATE(${users.createdAt})`);
+
+    let cumulative = 0;
+    const userRegistrationTrend = registrationTrendQuery.length > 0 ? registrationTrendQuery.map(item => {
+      cumulative += Number(item.count);
+      return {
+        date: item.date,
+        count: Number(item.count),
+        cumulative,
+      };
+    }) : [{
+      date: new Date().toISOString().split('T')[0],
+      count: 0,
+      cumulative: 0,
+    }];
+
+    // Location distribution (users and events)
+    const userLocationQuery = await db
+      .select({
+        location: sql`COALESCE(${users.hometown}, 'Unknown') || CASE WHEN ${users.state} IS NOT NULL THEN ', ' || ${users.state} ELSE '' END`,
+        count: sql`COUNT(*)::integer`,
+      })
+      .from(users)
+      .where(sql`${users.hometown} IS NOT NULL OR ${users.state} IS NOT NULL`)
+      .groupBy(sql`COALESCE(${users.hometown}, 'Unknown') || CASE WHEN ${users.state} IS NOT NULL THEN ', ' || ${users.state} ELSE '' END`)
+      .orderBy(sql`COUNT(*) DESC`)
+      .limit(10);
+
+    const eventLocationQuery = await db
+      .select({
+        location: events.location,
+        count: sql`COUNT(*)::integer`,
+      })
+      .from(events)
+      .groupBy(events.location)
+      .orderBy(sql`COUNT(*) DESC`)
+      .limit(10);
+
+    // Combine location data
+    const locationMap = new Map();
+    userLocationQuery.forEach(item => {
+      locationMap.set(item.location, { location: item.location, userCount: item.count, eventCount: 0 });
+    });
+    eventLocationQuery.forEach(item => {
+      const existing = locationMap.get(item.location);
+      if (existing) {
+        existing.eventCount = item.count;
+      } else {
+        locationMap.set(item.location, { location: item.location, userCount: 0, eventCount: item.count });
+      }
+    });
+
+    const locationDistribution = Array.from(locationMap.values()).slice(0, 10);
+    const eventLocationDistribution = eventLocationQuery.map(item => ({
+      location: item.location,
+      count: item.count,
+    }));
+
+    // Account creation by month and provider
+    const accountCreationQuery = await db
+      .select({
+        month: sql`TO_CHAR(${users.createdAt}, 'YYYY-MM')`,
+        provider: users.authProvider,
+        count: sql`COUNT(*)::integer`,
+      })
+      .from(users)
+      .where(sql`${users.createdAt} >= NOW() - INTERVAL '12 months'`)
+      .groupBy(sql`TO_CHAR(${users.createdAt}, 'YYYY-MM')`, users.authProvider)
+      .orderBy(sql`TO_CHAR(${users.createdAt}, 'YYYY-MM')`);
+
+    const accountCreationByMonth = accountCreationQuery.map(item => ({
+      month: item.month,
+      provider: item.provider,
+      count: item.count,
+    }));
+
+    // Top states
+    const topStatesQuery = await db
+      .select({
+        state: users.state,
+        count: sql`COUNT(*)::integer`,
+      })
+      .from(users)
+      .where(sql`${users.state} IS NOT NULL`)
+      .groupBy(users.state)
+      .orderBy(sql`COUNT(*) DESC`)
+      .limit(8);
+
+    const topStates = topStatesQuery.map(item => ({
+      state: item.state,
+      count: item.count,
+    }));
+
+    // Top colleges
+    const topCollegesQuery = await db
+      .select({
+        college: users.college,
+        count: sql`COUNT(*)::integer`,
+      })
+      .from(users)
+      .where(sql`${users.college} IS NOT NULL AND ${users.college} != ''`)
+      .groupBy(users.college)
+      .orderBy(sql`COUNT(*) DESC`)
+      .limit(10);
+
+    const topColleges = topCollegesQuery.map(item => ({
+      college: item.college,
+      count: item.count,
+    }));
+
+    return {
+      eventTimeDistribution,
+      eventDayDistribution,
+      userRegistrationTrend,
+      locationDistribution,
+      eventLocationDistribution,
+      accountCreationByMonth,
+      topStates,
+      topColleges,
     };
   }
 }

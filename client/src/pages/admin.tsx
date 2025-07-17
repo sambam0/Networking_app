@@ -27,6 +27,7 @@ import { useAuth } from "@/lib/auth";
 import { type User, type Event } from "@shared/schema";
 import { useState } from "react";
 import { AdminSettings } from "@/components/admin/admin-settings";
+import { AnalyticsDashboard } from "@/components/admin/analytics-dashboard";
 
 export default function AdminPage() {
   const { user } = useAuth();
@@ -206,6 +207,10 @@ export default function AdminPage() {
             <TabsTrigger value="connections" className="flex items-center gap-2">
               <Activity className="h-4 w-4" />
               Connections ({connections?.length || 0})
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4" />
+              Analytics
             </TabsTrigger>
             <TabsTrigger value="settings" className="flex items-center gap-2">
               <Settings className="h-4 w-4" />
@@ -622,6 +627,10 @@ export default function AdminPage() {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="analytics" className="mt-6">
+            <AnalyticsDashboard />
           </TabsContent>
 
           <TabsContent value="settings" className="mt-6">

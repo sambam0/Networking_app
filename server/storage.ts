@@ -33,6 +33,8 @@ export interface IStorage {
   createConnection(connection: InsertConnection): Promise<Connection>;
   getUserConnections(userId: number): Promise<UserProfile[]>;
   getEventConnections(eventId: number, userId: number): Promise<UserProfile[]>;
+  getUserConnectionsWithDetails(userId: number): Promise<any[]>;
+  getUserConnectionStats(userId: number): Promise<any>;
   
   // Recommendation operations
   getRecommendedEvents(userId: number): Promise<EventWithHost[]>;
@@ -412,6 +414,103 @@ export class DatabaseStorage implements IStorage {
       ));
 
     return eventConnections;
+  }
+
+  async getUserConnectionsWithDetails(userId: number): Promise<any[]> {
+    const connectionsData = await db
+      .select({
+        id: connections.id,
+        createdAt: connections.createdAt,
+        connectedUser: {
+          id: sql`connected_user.id`,
+          username: sql`connected_user.username`,
+          fullName: sql`connected_user.full_name`,
+          email: sql`connected_user.email`,
+          age: sql`connected_user.age`,
+          hometown: sql`connected_user.hometown`,
+          state: sql`connected_user.state`,
+          college: sql`connected_user.college`,
+          highSchool: sql`connected_user.high_school`,
+          background: sql`connected_user.background`,
+          aspirations: sql`connected_user.aspirations`,
+          interests: sql`connected_user.interests`,
+          socialLinks: sql`connected_user.social_links`,
+          profilePhoto: sql`connected_user.profile_photo`,
+        },
+        event: {
+          id: events.id,
+          name: events.name,
+          location: events.location,
+          date: events.date,
+        },
+      })
+      .from(connections)
+      .innerJoin(sql`${users} connected_user`, sql`
+        (${connections.fromUserId} = ${userId} AND ${connections.toUserId} = connected_user.id) OR
+        (${connections.toUserId} = ${userId} AND ${connections.fromUserId} = connected_user.id)
+      `)
+      .innerJoin(events, eq(connections.eventId, events.id))
+      .where(sql`${connections.fromUserId} = ${userId} OR ${connections.toUserId} = ${userId}`)
+      .orderBy(sql`${connections.createdAt} DESC`);
+
+    return connectionsData;
+  }
+
+  async getUserConnectionStats(userId: number): Promise<any> {
+    // Total connections
+    const totalConnections = await db
+      .select({ count: sql`COUNT(*)::integer` })
+      .from(connections)
+      .where(sql`${connections.fromUserId} = ${userId} OR ${connections.toUserId} = ${userId}`);
+
+    // Recent connections (this month)
+    const recentConnections = await db
+      .select({ count: sql`COUNT(*)::integer` })
+      .from(connections)
+      .where(sql`
+        (${connections.fromUserId} = ${userId} OR ${connections.toUserId} = ${userId}) AND
+        ${connections.createdAt} >= DATE_TRUNC('month', CURRENT_DATE)
+      `);
+
+    // Top events for networking
+    const topEvents = await db
+      .select({
+        eventName: events.name,
+        connectionCount: sql`COUNT(*)::integer`,
+      })
+      .from(connections)
+      .innerJoin(events, eq(connections.eventId, events.id))
+      .where(sql`${connections.fromUserId} = ${userId} OR ${connections.toUserId} = ${userId}`)
+      .groupBy(events.name)
+      .orderBy(sql`COUNT(*) DESC`)
+      .limit(5);
+
+    // Connections by month (last 6 months)
+    const connectionsByMonth = await db
+      .select({
+        month: sql`TO_CHAR(${connections.createdAt}, 'YYYY-MM')`,
+        count: sql`COUNT(*)::integer`,
+      })
+      .from(connections)
+      .where(sql`
+        (${connections.fromUserId} = ${userId} OR ${connections.toUserId} = ${userId}) AND
+        ${connections.createdAt} >= CURRENT_DATE - INTERVAL '6 months'
+      `)
+      .groupBy(sql`TO_CHAR(${connections.createdAt}, 'YYYY-MM')`)
+      .orderBy(sql`TO_CHAR(${connections.createdAt}, 'YYYY-MM')`);
+
+    return {
+      totalConnections: totalConnections[0]?.count || 0,
+      recentConnections: recentConnections[0]?.count || 0,
+      topEvents: topEvents.map(event => ({
+        eventName: event.eventName,
+        connectionCount: event.connectionCount,
+      })),
+      connectionsByMonth: connectionsByMonth.map(item => ({
+        month: item.month,
+        count: item.count,
+      })),
+    };
   }
 
   // Recommendation operations

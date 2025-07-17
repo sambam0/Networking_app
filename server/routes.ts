@@ -783,6 +783,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User connections routes
+  app.get('/api/user/connections', requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.user.id;
+      const connections = await storage.getUserConnectionsWithDetails(userId);
+      res.json(connections);
+    } catch (error) {
+      console.error('Error fetching user connections:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
+  });
+
+  app.get('/api/user/connection-stats', requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.user.id;
+      const stats = await storage.getUserConnectionStats(userId);
+      res.json(stats);
+    } catch (error) {
+      console.error('Error fetching connection stats:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

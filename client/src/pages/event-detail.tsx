@@ -11,6 +11,7 @@ import Navbar from "@/components/layout/navbar";
 import QRCode from "@/components/event/qr-code";
 import AttendeeGrid from "@/components/event/attendee-grid";
 import PeopleRecommendations from "@/components/recommendations/people-recommendations";
+import { CalendarSync } from "@/components/calendar-sync";
 import { Calendar, MapPin, Clock, Users, UserPlus, UserMinus, Lock, Unlock, Eye, EyeOff, Settings } from "lucide-react";
 import { type EventWithAttendees } from "@shared/schema";
 
@@ -211,28 +212,43 @@ export default function EventDetail() {
                   <p className="text-muted-foreground mb-6">{event.description}</p>
                 )}
                 
-                {!isHost && (
-                  <div className="flex space-x-4">
-                    {isAttending ? (
-                      <Button 
-                        variant="outline" 
-                        onClick={() => leaveEventMutation.mutate()}
-                        disabled={leaveEventMutation.isPending}
-                      >
-                        <UserMinus className="h-4 w-4 mr-2" />
-                        Leave Event
-                      </Button>
-                    ) : (
-                      <Button 
-                        onClick={() => joinEventMutation.mutate()}
-                        disabled={joinEventMutation.isPending}
-                      >
-                        <UserPlus className="h-4 w-4 mr-2" />
-                        Join Event
-                      </Button>
-                    )}
-                  </div>
-                )}
+                <div className="flex flex-wrap gap-4">
+                  {!isHost && (
+                    <>
+                      {isAttending ? (
+                        <Button 
+                          variant="outline" 
+                          onClick={() => leaveEventMutation.mutate()}
+                          disabled={leaveEventMutation.isPending}
+                        >
+                          <UserMinus className="h-4 w-4 mr-2" />
+                          Leave Event
+                        </Button>
+                      ) : (
+                        <Button 
+                          onClick={() => joinEventMutation.mutate()}
+                          disabled={joinEventMutation.isPending}
+                        >
+                          <UserPlus className="h-4 w-4 mr-2" />
+                          Join Event
+                        </Button>
+                      )}
+                    </>
+                  )}
+                  
+                  {/* Calendar Sync - Available to all users */}
+                  <CalendarSync event={event} />
+                  
+                  {isHost && (
+                    <Button 
+                      variant="outline"
+                      onClick={() => setLocation(`/events/${event.id}/settings`)}
+                    >
+                      <Settings className="h-4 w-4 mr-2" />
+                      Event Settings
+                    </Button>
+                  )}
+                </div>
               </CardContent>
             </Card>
 

@@ -9,6 +9,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import Navbar from "@/components/layout/navbar";
 import EventRecommendations from "@/components/recommendations/event-recommendations";
 import PeopleRecommendations from "@/components/recommendations/people-recommendations";
+import { EventGrid } from "@/components/event/event-card";
+import { CalendarSync } from "@/components/calendar-sync";
 import { Calendar, Users, Plus, Clock, MapPin, QrCode } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { type Event, type EventWithHost } from "@shared/schema";
@@ -189,29 +191,37 @@ export default function Dashboard() {
                 ) : events && events.length > 0 ? (
                   <div className="space-y-4">
                     {events.slice(0, 5).map((event: EventWithHost) => (
-                      <Link key={event.id} href={`/events/${event.id}`}>
-                        <div className="flex items-center space-x-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
-                          <div className="bg-primary/10 p-2 rounded-full">
-                            <Calendar className="h-6 w-6 text-primary" />
-                          </div>
-                          <div className="flex-1">
-                            <h4 className="font-semibold text-foreground">{event.name}</h4>
-                            <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                              <div className="flex items-center space-x-1">
-                                <Clock className="h-4 w-4" />
-                                <span>{new Date(event.date).toLocaleDateString()}</span>
-                              </div>
-                              <div className="flex items-center space-x-1">
-                                <MapPin className="h-4 w-4" />
-                                <span>{event.location}</span>
-                              </div>
+                      <div key={event.id} className="flex items-center space-x-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                        <div className="bg-primary/10 p-2 rounded-full">
+                          <Calendar className="h-6 w-6 text-primary" />
+                        </div>
+                        <div className="flex-1">
+                          <Link href={`/events/${event.id}`}>
+                            <h4 className="font-semibold text-foreground hover:underline cursor-pointer">{event.name}</h4>
+                          </Link>
+                          <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                            <div className="flex items-center space-x-1">
+                              <Clock className="h-4 w-4" />
+                              <span>{new Date(event.date).toLocaleDateString()}</span>
+                            </div>
+                            <div className="flex items-center space-x-1">
+                              <MapPin className="h-4 w-4" />
+                              <span>{event.location}</span>
                             </div>
                           </div>
+                        </div>
+                        <div className="flex items-center gap-2">
                           <Badge variant="secondary">
                             {event.attendeeCount} attendees
                           </Badge>
+                          <CalendarSync 
+                            event={event} 
+                            variant="ghost" 
+                            size="sm"
+                            showLabel={false}
+                          />
                         </div>
-                      </Link>
+                      </div>
                     ))}
                   </div>
                 ) : (

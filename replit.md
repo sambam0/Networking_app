@@ -165,6 +165,24 @@ The application follows a monorepo structure with clear separation between clien
   - Enhanced attendee discovery through social profile previews
   - Quick connection facilitation through visible social media presence
 
+### One-Click Event Calendar Sync Feature (July 2025)
+- Comprehensive calendar integration supporting multiple providers:
+  - Google Calendar with direct web integration
+  - Microsoft Outlook (Outlook.com) web calendar
+  - Yahoo Calendar web integration
+  - Universal .ics file download for Apple Calendar, Thunderbird, and other calendar apps
+- Smart event formatting with automatic duration calculation (2-hour default)
+- Enhanced user experience features:
+  - Dropdown menu with platform-specific branding and icons
+  - One-click calendar sync available on event detail pages and dashboard
+  - Automatic event details population (title, description, location, time)
+  - Universal calendar support through standards-compliant .ics file generation
+- Integration points throughout the application:
+  - Event detail pages with prominent calendar sync button
+  - Dashboard event cards with quick calendar sync access
+  - Event grid components with optional calendar sync integration
+  - Modular calendar utilities for consistent formatting across components
+
 ### Advanced Recommendation Engine (July 2025)
 - Enhanced people recommendation algorithm with sophisticated scoring:
   - Location matching: Same hometown (7 pts), same state (4 pts)

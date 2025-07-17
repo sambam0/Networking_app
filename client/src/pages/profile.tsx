@@ -14,7 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth";
 import { apiRequest } from "@/lib/queryClient";
 import Navbar from "@/components/layout/navbar";
-import { Upload, X, Plus, User, Save } from "lucide-react";
+import { Upload, X, Plus, User, Save, Link, ExternalLink, Copy, Check, Linkedin, Twitter, Instagram, Github, Video, Facebook, Globe } from "lucide-react";
 
 const profileUpdateSchema = z.object({
   fullName: z.string().min(1, "Full name is required"),
@@ -30,8 +30,214 @@ const profileUpdateSchema = z.object({
     linkedin: z.string().optional().refine(val => !val || z.string().url().safeParse(val).success, "Invalid LinkedIn URL"),
     website: z.string().optional().refine(val => !val || z.string().url().safeParse(val).success, "Invalid website URL"),
     twitter: z.string().optional().refine(val => !val || z.string().url().safeParse(val).success, "Invalid Twitter URL"),
+    instagram: z.string().optional().refine(val => !val || z.string().url().safeParse(val).success, "Invalid Instagram URL"),
+    github: z.string().optional().refine(val => !val || z.string().url().safeParse(val).success, "Invalid GitHub URL"),
+    tiktok: z.string().optional().refine(val => !val || z.string().url().safeParse(val).success, "Invalid TikTok URL"),
+    facebook: z.string().optional().refine(val => !val || z.string().url().safeParse(val).success, "Invalid Facebook URL"),
+    youtube: z.string().optional().refine(val => !val || z.string().url().safeParse(val).success, "Invalid YouTube URL"),
   }).optional(),
 });
+
+// Social media platform configuration
+const socialPlatforms = [
+  { 
+    key: 'linkedin', 
+    name: 'LinkedIn', 
+    icon: Linkedin, 
+    color: 'text-blue-600',
+    placeholder: 'https://linkedin.com/in/yourname',
+    baseUrl: 'https://linkedin.com/in/'
+  },
+  { 
+    key: 'twitter', 
+    name: 'X (Twitter)', 
+    icon: Twitter, 
+    color: 'text-black dark:text-white',
+    placeholder: 'https://x.com/yourusername',
+    baseUrl: 'https://x.com/'
+  },
+  { 
+    key: 'instagram', 
+    name: 'Instagram', 
+    icon: Instagram, 
+    color: 'text-pink-500',
+    placeholder: 'https://instagram.com/yourusername',
+    baseUrl: 'https://instagram.com/'
+  },
+  { 
+    key: 'github', 
+    name: 'GitHub', 
+    icon: Github, 
+    color: 'text-gray-800 dark:text-white',
+    placeholder: 'https://github.com/yourusername',
+    baseUrl: 'https://github.com/'
+  },
+  { 
+    key: 'youtube', 
+    name: 'YouTube', 
+    icon: Video, 
+    color: 'text-red-500',
+    placeholder: 'https://youtube.com/@yourchannel',
+    baseUrl: 'https://youtube.com/@'
+  },
+  { 
+    key: 'tiktok', 
+    name: 'TikTok', 
+    icon: Video, 
+    color: 'text-black dark:text-white',
+    placeholder: 'https://tiktok.com/@yourusername',
+    baseUrl: 'https://tiktok.com/@'
+  },
+  { 
+    key: 'facebook', 
+    name: 'Facebook', 
+    icon: Facebook, 
+    color: 'text-blue-700',
+    placeholder: 'https://facebook.com/yourname',
+    baseUrl: 'https://facebook.com/'
+  },
+  { 
+    key: 'website', 
+    name: 'Website', 
+    icon: Globe, 
+    color: 'text-green-600',
+    placeholder: 'https://yourwebsite.com',
+    baseUrl: 'https://'
+  },
+] as const;
+
+// Social Media Integration Component
+function SocialMediaIntegration({ form }: { form: any }) {
+  const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
+
+  const copyToClipboard = async (url: string) => {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiedUrl(url);
+      setTimeout(() => setCopiedUrl(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
+  const handleQuickSetup = (platform: typeof socialPlatforms[0], username: string) => {
+    if (username.trim()) {
+      const fullUrl = platform.baseUrl + username.trim();
+      form.setValue(`socialLinks.${platform.key}`, fullUrl);
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Link className="w-5 h-5" />
+          Social Media Integration
+        </CardTitle>
+        <p className="text-sm text-muted-foreground">
+          Connect your social profiles for easy networking and professional connections
+        </p>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="grid gap-4">
+          {socialPlatforms.map((platform) => {
+            const Icon = platform.icon;
+            const currentValue = form.watch(`socialLinks.${platform.key}`);
+            
+            return (
+              <div key={platform.key} className="space-y-2">
+                <FormField
+                  control={form.control}
+                  name={`socialLinks.${platform.key}`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2">
+                        <Icon className={`w-4 h-4 ${platform.color}`} />
+                        {platform.name}
+                      </FormLabel>
+                      <div className="flex gap-2">
+                        <FormControl>
+                          <Input
+                            placeholder={platform.placeholder}
+                            {...field}
+                            className="flex-1"
+                          />
+                        </FormControl>
+                        {currentValue && (
+                          <div className="flex gap-1">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => copyToClipboard(currentValue)}
+                              className="px-3"
+                            >
+                              {copiedUrl === currentValue ? (
+                                <Check className="w-4 h-4 text-green-500" />
+                              ) : (
+                                <Copy className="w-4 h-4" />
+                              )}
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => window.open(currentValue, '_blank')}
+                              className="px-3"
+                            >
+                              <ExternalLink className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                {platform.key !== 'website' && (
+                  <div className="flex items-center gap-2 ml-6">
+                    <span className="text-xs text-muted-foreground">Quick setup:</span>
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs text-muted-foreground">{platform.baseUrl}</span>
+                      <Input
+                        placeholder="username"
+                        className="h-6 text-xs w-24"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleQuickSetup(platform, e.currentTarget.value);
+                            e.currentTarget.value = '';
+                          }
+                        }}
+                      />
+                      <span className="text-xs text-muted-foreground">→ Press Enter</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+        
+        <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
+          <div className="flex items-start gap-2">
+            <div className="w-2 h-2 bg-primary rounded-full mt-2"></div>
+            <div>
+              <p className="font-medium text-sm">Pro Tips for Social Integration:</p>
+              <ul className="text-xs text-muted-foreground space-y-1 mt-1">
+                <li>• Use your complete profile URLs for better professional presentation</li>
+                <li>• LinkedIn connections are highly valued in professional networking</li>
+                <li>• GitHub profiles showcase your technical skills to other attendees</li>
+                <li>• Copy links to share with new connections quickly</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function Profile() {
   const { user } = useAuth();
@@ -58,6 +264,11 @@ export default function Profile() {
         linkedin: user?.socialLinks?.linkedin || "",
         website: user?.socialLinks?.website || "",
         twitter: user?.socialLinks?.twitter || "",
+        instagram: user?.socialLinks?.instagram || "",
+        github: user?.socialLinks?.github || "",
+        tiktok: user?.socialLinks?.tiktok || "",
+        facebook: user?.socialLinks?.facebook || "",
+        youtube: user?.socialLinks?.youtube || "",
       },
     },
   });
@@ -435,49 +646,7 @@ export default function Profile() {
                           </div>
                         </div>
                         
-                        <div>
-                          <label className="block text-sm font-medium text-foreground mb-2">
-                            Social Links
-                          </label>
-                          <div className="space-y-3">
-                            <FormField
-                              control={form.control}
-                              name="socialLinks.linkedin"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormControl>
-                                    <Input placeholder="LinkedIn profile URL" {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            <FormField
-                              control={form.control}
-                              name="socialLinks.website"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormControl>
-                                    <Input placeholder="Personal website URL" {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            <FormField
-                              control={form.control}
-                              name="socialLinks.twitter"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormControl>
-                                    <Input placeholder="Twitter profile URL" {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                        </div>
+
                       </div>
                     </div>
                     
@@ -495,6 +664,11 @@ export default function Profile() {
                 </Form>
               </CardContent>
             </Card>
+          </div>
+          
+          {/* Social Media Integration Section */}
+          <div className="lg:col-span-3">
+            <SocialMediaIntegration form={form} />
           </div>
         </div>
       </div>

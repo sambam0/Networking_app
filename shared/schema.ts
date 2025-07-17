@@ -18,7 +18,16 @@ export const users = pgTable("users", {
   background: text("background"),
   aspirations: text("aspirations"),
   interests: text("interests").array(),
-  socialLinks: json("social_links").$type<{ linkedin?: string; website?: string; twitter?: string }>(),
+  socialLinks: json("social_links").$type<{ 
+    linkedin?: string; 
+    website?: string; 
+    twitter?: string; 
+    instagram?: string;
+    github?: string;
+    tiktok?: string;
+    facebook?: string;
+    youtube?: string;
+  }>(),
   profilePhoto: text("profile_photo"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

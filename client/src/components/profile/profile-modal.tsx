@@ -8,7 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MessageCircle, ExternalLink, Globe, Linkedin } from "lucide-react";
+import { MessageCircle, ExternalLink, Globe, Linkedin, Twitter, Instagram, Github, Video, Facebook } from "lucide-react";
 import { type UserProfile } from "@shared/schema";
 
 interface ProfileModalProps {
@@ -76,32 +76,100 @@ export default function ProfileModal({ user, isOpen, onClose, onConnect }: Profi
               </div>
             )}
             
-            {user.socialLinks && (
-              <div className="space-y-3">
-                {user.socialLinks.linkedin && (
-                  <a 
-                    href={user.socialLinks.linkedin}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center space-x-2 text-secondary hover:text-secondary/80 transition-colors"
-                  >
-                    <Linkedin className="h-4 w-4" />
-                    <span>LinkedIn</span>
-                    <ExternalLink className="h-3 w-3" />
-                  </a>
-                )}
-                {user.socialLinks.website && (
-                  <a 
-                    href={user.socialLinks.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center space-x-2 text-secondary hover:text-secondary/80 transition-colors"
-                  >
-                    <Globe className="h-4 w-4" />
-                    <span>Website</span>
-                    <ExternalLink className="h-3 w-3" />
-                  </a>
-                )}
+            {/* Social Media Links */}
+            {user.socialLinks && Object.values(user.socialLinks).some(link => link) && (
+              <div className="mb-6">
+                <p className="text-sm font-medium text-foreground mb-3">🔗 Connect</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {user.socialLinks.linkedin && (
+                    <a 
+                      href={user.socialLinks.linkedin}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 p-2 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg transition-colors text-blue-600 dark:text-blue-400"
+                    >
+                      <Linkedin className="h-4 w-4" />
+                      <span className="text-xs font-medium">LinkedIn</span>
+                    </a>
+                  )}
+                  {user.socialLinks.twitter && (
+                    <a 
+                      href={user.socialLinks.twitter}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-gray-700 dark:text-gray-300"
+                    >
+                      <Twitter className="h-4 w-4" />
+                      <span className="text-xs font-medium">X</span>
+                    </a>
+                  )}
+                  {user.socialLinks.instagram && (
+                    <a 
+                      href={user.socialLinks.instagram}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 p-2 bg-pink-50 dark:bg-pink-900/20 hover:bg-pink-100 dark:hover:bg-pink-900/30 rounded-lg transition-colors text-pink-600 dark:text-pink-400"
+                    >
+                      <Instagram className="h-4 w-4" />
+                      <span className="text-xs font-medium">Instagram</span>
+                    </a>
+                  )}
+                  {user.socialLinks.github && (
+                    <a 
+                      href={user.socialLinks.github}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-gray-700 dark:text-gray-300"
+                    >
+                      <Github className="h-4 w-4" />
+                      <span className="text-xs font-medium">GitHub</span>
+                    </a>
+                  )}
+                  {user.socialLinks.youtube && (
+                    <a 
+                      href={user.socialLinks.youtube}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 p-2 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-colors text-red-600 dark:text-red-400"
+                    >
+                      <Video className="h-4 w-4" />
+                      <span className="text-xs font-medium">YouTube</span>
+                    </a>
+                  )}
+                  {user.socialLinks.facebook && (
+                    <a 
+                      href={user.socialLinks.facebook}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 p-2 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg transition-colors text-blue-700 dark:text-blue-300"
+                    >
+                      <Facebook className="h-4 w-4" />
+                      <span className="text-xs font-medium">Facebook</span>
+                    </a>
+                  )}
+                  {user.socialLinks.tiktok && (
+                    <a 
+                      href={user.socialLinks.tiktok}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-gray-700 dark:text-gray-300"
+                    >
+                      <Video className="h-4 w-4" />
+                      <span className="text-xs font-medium">TikTok</span>
+                    </a>
+                  )}
+                  {user.socialLinks.website && (
+                    <a 
+                      href={user.socialLinks.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 p-2 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30 rounded-lg transition-colors text-green-600 dark:text-green-400"
+                    >
+                      <Globe className="h-4 w-4" />
+                      <span className="text-xs font-medium">Website</span>
+                    </a>
+                  )}
+                </div>
               </div>
             )}
           </div>

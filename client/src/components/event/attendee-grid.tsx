@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MessageCircle, MapPin, GraduationCap, Building, Users, Eye } from "lucide-react";
+import { MessageCircle, MapPin, GraduationCap, Building, Users, Eye, Linkedin, Twitter, Instagram, Github, Video, Facebook, Globe } from "lucide-react";
 
 interface AttendeeGridProps {
   eventId: number;
@@ -112,6 +112,69 @@ function EnhancedAttendeeCard({
                 <Badge variant="outline" className="text-xs">
                   +{attendee.interests.length - 3} more
                 </Badge>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Social Media Links */}
+        {attendee.socialLinks && Object.values(attendee.socialLinks).some(link => link) && (
+          <div className="mb-4">
+            <div className="flex items-center gap-1 flex-wrap">
+              {attendee.socialLinks.linkedin && (
+                <a 
+                  href={attendee.socialLinks.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-1 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded text-blue-600 dark:text-blue-400 transition-colors"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Linkedin className="h-3 w-3" />
+                </a>
+              )}
+              {attendee.socialLinks.twitter && (
+                <a 
+                  href={attendee.socialLinks.twitter}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-1 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-700 dark:text-gray-300 transition-colors"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Twitter className="h-3 w-3" />
+                </a>
+              )}
+              {attendee.socialLinks.instagram && (
+                <a 
+                  href={attendee.socialLinks.instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-1 bg-pink-50 dark:bg-pink-900/20 hover:bg-pink-100 dark:hover:bg-pink-900/30 rounded text-pink-600 dark:text-pink-400 transition-colors"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Instagram className="h-3 w-3" />
+                </a>
+              )}
+              {attendee.socialLinks.github && (
+                <a 
+                  href={attendee.socialLinks.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-1 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-700 dark:text-gray-300 transition-colors"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Github className="h-3 w-3" />
+                </a>
+              )}
+              {attendee.socialLinks.website && (
+                <a 
+                  href={attendee.socialLinks.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-1 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30 rounded text-green-600 dark:text-green-400 transition-colors"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Globe className="h-3 w-3" />
+                </a>
               )}
             </div>
           </div>

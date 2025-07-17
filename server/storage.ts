@@ -25,7 +25,7 @@ export interface IStorage {
   leaveEvent(eventId: number, userId: number): Promise<boolean>;
   getEventAttendees(eventId: number): Promise<UserProfile[]>;
   getUserEvents(userId: number): Promise<Event[]>;
-  isUserAttending(eventId: number, userId: number): Promise<boolean>;
+  isUserAttendingEvent(eventId: number, userId: number): Promise<boolean>;
 
   // Connection operations
   createConnection(connection: InsertConnection): Promise<Connection>;
@@ -266,7 +266,7 @@ export class DatabaseStorage implements IStorage {
     return userEvents;
   }
 
-  async isUserAttending(eventId: number, userId: number): Promise<boolean> {
+  async isUserAttendingEvent(eventId: number, userId: number): Promise<boolean> {
     const [attendee] = await db
       .select()
       .from(eventAttendees)

@@ -11,7 +11,7 @@ import Navbar from "@/components/layout/navbar";
 import QRCode from "@/components/event/qr-code";
 import AttendeeGrid from "@/components/event/attendee-grid";
 import PeopleRecommendations from "@/components/recommendations/people-recommendations";
-import { Calendar, MapPin, Clock, Users, UserPlus, UserMinus } from "lucide-react";
+import { Calendar, MapPin, Clock, Users, UserPlus, UserMinus, Lock, Unlock, Eye, EyeOff, Settings } from "lucide-react";
 import { type EventWithAttendees } from "@shared/schema";
 
 export default function EventDetail() {
@@ -196,6 +196,11 @@ export default function EventDetail() {
                     <Badge variant="secondary" className="flex items-center space-x-1">
                       <Users className="h-3 w-3" />
                       <span>{event.attendees?.length || 0} attendees</span>
+                    </Badge>
+                    {/* Privacy indicator */}
+                    <Badge variant={event.isPublic ? "outline" : "secondary"} className="flex items-center space-x-1">
+                      {event.isPublic ? <Unlock className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
+                      <span>{event.isPublic ? "Public" : "Private"}</span>
                     </Badge>
                     {isHost && <Badge variant="default">Host</Badge>}
                   </div>

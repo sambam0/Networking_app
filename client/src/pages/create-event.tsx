@@ -7,12 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
+import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth";
 import Navbar from "@/components/layout/navbar";
-import { Calendar, MapPin, Clock, QrCode } from "lucide-react";
+import { Calendar, MapPin, Clock, QrCode, Lock, Unlock, Eye, EyeOff, Settings } from "lucide-react";
 
 export default function CreateEvent() {
   const [, setLocation] = useLocation();
@@ -28,6 +30,21 @@ export default function CreateEvent() {
       location: "",
       date: new Date(),
       isActive: true,
+      isPublic: true,
+      visibleFields: {
+        fullName: true,
+        age: true,
+        hometown: true,
+        state: true,
+        college: true,
+        highSchool: true,
+        school: true,
+        background: true,
+        aspirations: true,
+        interests: true,
+        socialLinks: true,
+        profilePhoto: true
+      }
     },
   });
 
@@ -173,6 +190,90 @@ export default function CreateEvent() {
                       </FormItem>
                     )}
                   />
+
+                  {/* Event Privacy Settings */}
+                  <div className="space-y-6 pt-6 border-t">
+                    <div className="flex items-center gap-2">
+                      <Settings className="h-5 w-5" />
+                      <h3 className="text-lg font-semibold">Event Privacy & Visibility</h3>
+                    </div>
+
+                    <FormField
+                      control={form.control}
+                      name="isPublic"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                          <div className="space-y-0.5">
+                            <FormLabel className="text-base flex items-center gap-2">
+                              {field.value ? <Unlock className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
+                              {field.value ? "Public Event" : "Private Event"}
+                            </FormLabel>
+                            <FormDescription>
+                              {field.value 
+                                ? "Attendees can see who's coming before the event starts"
+                                : "Attendees can only see other attendees once they arrive at the event"
+                              }
+                            </FormDescription>
+                          </div>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Visible Fields Configuration */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2">
+                        <Eye className="h-4 w-4" />
+                        <h4 className="font-medium">Attendee Information Visibility</h4>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Choose what information attendees can see about each other
+                      </p>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        {[
+                          { key: 'fullName', label: 'Full Name', required: true },
+                          { key: 'age', label: 'Age' },
+                          { key: 'hometown', label: 'Hometown' },
+                          { key: 'state', label: 'State' },
+                          { key: 'college', label: 'College' },
+                          { key: 'highSchool', label: 'High School' },
+                          { key: 'background', label: 'Background' },
+                          { key: 'aspirations', label: 'Aspirations' },
+                          { key: 'interests', label: 'Interests' },
+                          { key: 'socialLinks', label: 'Social Media' },
+                          { key: 'profilePhoto', label: 'Profile Photo' }
+                        ].map((field) => (
+                          <FormField
+                            key={field.key}
+                            control={form.control}
+                            name={`visibleFields.${field.key}`}
+                            render={({ field: formField }) => (
+                              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                <FormControl>
+                                  <Checkbox
+                                    checked={formField.value}
+                                    onCheckedChange={formField.onChange}
+                                    disabled={field.required}
+                                  />
+                                </FormControl>
+                                <div className="space-y-1 leading-none">
+                                  <FormLabel className={`text-sm ${field.required ? 'text-muted-foreground' : ''}`}>
+                                    {field.label} {field.required && '(Required)'}
+                                  </FormLabel>
+                                </div>
+                              </FormItem>
+                            )}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
 
                   <Button 
                     type="submit" 

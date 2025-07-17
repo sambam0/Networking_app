@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, json } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, json, jsonb } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -41,6 +41,21 @@ export const events = pgTable("events", {
   date: timestamp("date").notNull(),
   qrCode: text("qr_code").notNull().unique(),
   isActive: boolean("is_active").default(true).notNull(),
+  isPublic: boolean("is_public").default(true).notNull(),
+  visibleFields: jsonb("visible_fields").default({
+    fullName: true,
+    age: true,
+    hometown: true,
+    state: true,
+    college: true,
+    highSchool: true,
+    school: true,
+    background: true,
+    aspirations: true,
+    interests: true,
+    socialLinks: true,
+    profilePhoto: true
+  }).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -124,6 +139,33 @@ export const insertEventSchema = createInsertSchema(events).omit({
   date: z.union([z.date(), z.string().datetime()]).transform((val) => {
     return typeof val === 'string' ? new Date(val) : val;
   }),
+  visibleFields: z.object({
+    fullName: z.boolean().default(true),
+    age: z.boolean().default(true),
+    hometown: z.boolean().default(true),
+    state: z.boolean().default(true),
+    college: z.boolean().default(true),
+    highSchool: z.boolean().default(true),
+    school: z.boolean().default(true),
+    background: z.boolean().default(true),
+    aspirations: z.boolean().default(true),
+    interests: z.boolean().default(true),
+    socialLinks: z.boolean().default(true),
+    profilePhoto: z.boolean().default(true)
+  }).default({
+    fullName: true,
+    age: true,
+    hometown: true,
+    state: true,
+    college: true,
+    highSchool: true,
+    school: true,
+    background: true,
+    aspirations: true,
+    interests: true,
+    socialLinks: true,
+    profilePhoto: true
+  })
 });
 
 export const insertEventAttendeeSchema = createInsertSchema(eventAttendees).omit({

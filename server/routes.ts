@@ -187,7 +187,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const host = await storage.getUserById(event.hostId);
-      const attendees = await storage.getEventAttendees(id);
+      const userId = req.session.user.id;
+      
+      // Check if user is attending this event or is the host
+      const isHost = event.hostId === userId;
+      const isAttending = await storage.isUserAttendingEvent(id, userId);
+
+      // For public events, show attendees. For private events, only show if attending or host
+      let attendees = [];
+      if (event.isPublic || isHost || isAttending) {
+        const allAttendees = await storage.getEventAttendees(id);
+        
+        // Filter attendee data based on event's visible fields settings
+        const visibleFields = event.visibleFields || {
+          fullName: true, age: true, hometown: true, state: true,
+          college: true, highSchool: true, school: true, background: true,
+          aspirations: true, interests: true, socialLinks: true, profilePhoto: true
+        };
+
+        attendees = allAttendees.map(attendee => {
+          const filteredAttendee: any = { id: attendee.id };
+
+          // Always include required fields
+          filteredAttendee.fullName = attendee.fullName;
+
+          // Include optional fields based on settings
+          if (visibleFields.age) filteredAttendee.age = attendee.age;
+          if (visibleFields.hometown) filteredAttendee.hometown = attendee.hometown;
+          if (visibleFields.state) filteredAttendee.state = attendee.state;
+          if (visibleFields.college) filteredAttendee.college = attendee.college;
+          if (visibleFields.highSchool) filteredAttendee.highSchool = attendee.highSchool;
+          if (visibleFields.school) filteredAttendee.school = attendee.school;
+          if (visibleFields.background) filteredAttendee.background = attendee.background;
+          if (visibleFields.aspirations) filteredAttendee.aspirations = attendee.aspirations;
+          if (visibleFields.interests) filteredAttendee.interests = attendee.interests;
+          if (visibleFields.socialLinks) filteredAttendee.socialLinks = attendee.socialLinks;
+          if (visibleFields.profilePhoto) filteredAttendee.profilePhoto = attendee.profilePhoto;
+
+          return filteredAttendee;
+        });
+      }
       
       res.json({
         ...event,
@@ -260,8 +299,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/events/:id/attendees', requireAuth, async (req, res) => {
     try {
       const eventId = parseInt(req.params.id);
+      const userId = req.session.user.id;
+
+      // Get the event to check privacy settings
+      const event = await storage.getEventById(eventId);
+      if (!event) {
+        return res.status(404).json({ message: 'Event not found' });
+      }
+
+      // Check if user is attending this event or is the host
+      const isHost = event.hostId === userId;
+      const isAttending = await storage.isUserAttendingEvent(eventId, userId);
+
+      if (!isHost && !isAttending) {
+        return res.status(403).json({ message: 'Access denied' });
+      }
+
+      // If event is private, only show attendees if user is currently at the event
+      // For now, we'll assume that if user is attending, they have access
+      // In a real app, you might check location or QR scan timestamp
+      if (!event.isPublic && !isHost) {
+        // Could implement additional checks here for "at event" status
+      }
+
       const attendees = await storage.getEventAttendees(eventId);
-      res.json(attendees);
+      
+      // Filter attendee data based on event's visible fields settings
+      const visibleFields = event.visibleFields || {
+        fullName: true, age: true, hometown: true, state: true,
+        college: true, highSchool: true, school: true, background: true,
+        aspirations: true, interests: true, socialLinks: true, profilePhoto: true
+      };
+
+      const filteredAttendees = attendees.map(attendee => {
+        const filteredAttendee: any = { id: attendee.id };
+
+        // Always include required fields
+        filteredAttendee.fullName = attendee.fullName;
+
+        // Include optional fields based on settings
+        if (visibleFields.age) filteredAttendee.age = attendee.age;
+        if (visibleFields.hometown) filteredAttendee.hometown = attendee.hometown;
+        if (visibleFields.state) filteredAttendee.state = attendee.state;
+        if (visibleFields.college) filteredAttendee.college = attendee.college;
+        if (visibleFields.highSchool) filteredAttendee.highSchool = attendee.highSchool;
+        if (visibleFields.school) filteredAttendee.school = attendee.school;
+        if (visibleFields.background) filteredAttendee.background = attendee.background;
+        if (visibleFields.aspirations) filteredAttendee.aspirations = attendee.aspirations;
+        if (visibleFields.interests) filteredAttendee.interests = attendee.interests;
+        if (visibleFields.socialLinks) filteredAttendee.socialLinks = attendee.socialLinks;
+        if (visibleFields.profilePhoto) filteredAttendee.profilePhoto = attendee.profilePhoto;
+
+        return filteredAttendee;
+      });
+
+      res.json(filteredAttendees);
     } catch (error) {
       res.status(500).json({ message: 'Server error' });
     }

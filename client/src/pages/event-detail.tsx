@@ -236,8 +236,11 @@ export default function EventDetail() {
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <Users className="h-5 w-5" />
-                  <span>Event Attendees</span>
+                  <span>Meet the Attendees</span>
                 </CardTitle>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Browse detailed profiles of everyone attending this event. Connect with people who share your interests, background, or goals.
+                </p>
               </CardHeader>
               <CardContent>
                 <AttendeeGrid eventId={parseInt(id)} onConnect={handleConnect} />
